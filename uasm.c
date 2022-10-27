@@ -225,6 +225,7 @@ translate_line(char* line, FILE* of, bool emit)
   } else if (isop(tok, "LOAD")) {
     op.opcode = OP_LOAD;
     op.reg    = get_register();
+    op.arg    = get_address(emit);
   } else if (isop(tok, "STORE")) {
     op.opcode = OP_STORE;
     op.reg    = get_register();
