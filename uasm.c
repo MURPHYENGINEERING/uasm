@@ -29,6 +29,8 @@ typedef enum {
   OP_ADDR  = 0b001000,
   OP_ADDM  = 0b001100,
   OP_JUMP  = 0b000011,
+  OP_CALL  = 0b010000,
+  OP_RET   = 0b010100,
   OP_HALT  = 0b000000,
   OP_NOP   = 0b000001,
   OP_WORD  = 0b000000
@@ -245,6 +247,11 @@ translate_line(char* line, FILE* of, bool emit)
   } else if (isop(tok, "JUMP")) {
     op.opcode = OP_JUMP;
     op.arg    = get_address(emit);
+  } else if (isop(tok, "CALL")) {
+    op.opcode = OP_CALL;
+    op.arg    = get_address(emit);
+  } else if (isop(tok, "RET")) {
+    op.opcode = OP_RET;
   } else if (isop(tok, "NOP")) {
     op.opcode = OP_NOP;
   } else if (isop(tok, "HALT")) {
