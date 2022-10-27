@@ -22,15 +22,15 @@ typedef struct {
 } Label;
 
 typedef enum {
+  OP_JUMP  = 0b000011,
+  OP_CALL  = 0b110000,
+  OP_RET   = 0b110100,
   OP_LOADI = 0b111000,
   OP_LOAD  = 0b101000,
   OP_STORE = 0b101100,
   OP_ADDI  = 0b000100,
   OP_ADDR  = 0b001000,
   OP_ADDM  = 0b001100,
-  OP_JUMP  = 0b000011,
-  OP_CALL  = 0b010000,
-  OP_RET   = 0b010100,
   OP_HALT  = 0b000000,
   OP_NOP   = 0b000001,
   OP_WORD  = 0b000000
