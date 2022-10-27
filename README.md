@@ -36,6 +36,7 @@ start:
                 ; If it works correctly then this should be skipped,
                 ; and the value of myvar will be 3
 end:
+  load  c myvar
   HALT
 
 myvar:
@@ -53,7 +54,7 @@ Labels
   firstvar   = 02 on line 10
   start      = 03 on line 13
   end        = 0f on line 23
-  myvar      = 10 on line 26
+  myvar      = 12 on line 27
 
 Instructions
 
@@ -67,13 +68,15 @@ Instructions
   ADDR  A B        07  08
                    08  01
   STORE A myvar    09  2c
-                   0a  10
+                   0a  12
   JUMP  end        0b  03
                    0c  0f
   ADDI  A 2        0d  04
                    0e  02
-  HALT             0f  00
-  WORD             10  00
+  load  c myvar    0f  2a
+                   10  12
+  HALT             11  00
+  WORD             12  00
 ```
 
 ### Resulting `loader.dat` file:
@@ -88,11 +91,13 @@ Instructions
 07  08
 08  01
 09  2c
-0a  10
+0a  12
 0b  03
 0c  0f
 0d  04
 0e  02
-0f  00
-10  00
+0f  2a
+10  12
+11  00
+12  00
 ```

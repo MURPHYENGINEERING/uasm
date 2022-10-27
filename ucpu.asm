@@ -21,6 +21,7 @@ start:
                 ; If it works correctly then this should be skipped,
                 ; and the value of myvar will be 3
 end:
+  load  c myvar
   HALT
 
 myvar:
