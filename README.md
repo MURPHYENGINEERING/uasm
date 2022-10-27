@@ -3,11 +3,11 @@ Assembly language for a microcoded CPU implemented on FPGA, for EEE 333 with Set
 
 ### Usage:
 
-  ```
-  cmake .
-  cmake --build . --target all
-  ./uasm [input_file] [output_file]
-  ```
+```
+cmake .
+cmake --build . --target all
+./uasm [input_file] [output_file]
+```
 
 If you don't specify `output_file` then it will use the name of the input file and add the extension `.dat`. If you don't specify filenames then it will use `ucpu.asm` and output to `ucpu.dat`.
 
