@@ -22,7 +22,6 @@ If you don't specify `output_file` then it will use the name of the input file a
 
   JUMP start
 
-
 firstvar:       ; Data can appear anywhere if you jump over it
   WORD
 
