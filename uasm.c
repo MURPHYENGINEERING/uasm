@@ -11,9 +11,6 @@
 #define LINE_MAX_LEN 1024
 #define LABEL_MAX_LEN 32
 
-#define MEMORY_WIDTH 16
-#define MEMORY_DEPTH 256
-
 #define DELIM " \t"
 
 typedef struct {
@@ -117,7 +114,7 @@ find_label(char* line, bool notify)
   size_t end = strnlen(line, LINE_MAX_LEN) - 1;
   if (line[end] == ':') {
     line[end] = '\0';
-    if (strlen(line) == 0)
+    if (strnlen(line, LINE_MAX_LEN) == 0)
       expected("label declaration");
 
     strlcpy(labels[nLabels].name, line, LABEL_MAX_LEN);
@@ -206,7 +203,7 @@ translate_line(char* line, FILE* of, bool emit)
 {
   char buf[128];
   if (emit) {
-    sprintf(buf, "  %%-%lus", longestLineLen + 4);
+    snprintf(buf, sizeof(buf)-1, "  %%-%lus", longestLineLen + 4);
     printf(buf, line);
   }
 
@@ -274,7 +271,7 @@ translate_line(char* line, FILE* of, bool emit)
     ++curAddr;
     if (emit) {
       fprintf(of, "%02x  %02x\n", (unsigned int) curAddr, op.arg);
-      sprintf(buf, "  %%-%lus%%02x  %%02x\n", longestLineLen + 4);
+      snprintf(buf, sizeof(buf)-1, "  %%-%lus%%02x  %%02x\n", longestLineLen + 4);
       printf(buf, "", curAddr, op.arg);
     }
   }
@@ -307,9 +304,9 @@ translate_file(FILE* inFile, FILE* outFile)
       char* cleanLine = strip_whitespace(line);
 
       if (*cleanLine != 0) {
-        size_t len = strlen(cleanLine);
-        if (len > longestLineLen)
-          longestLineLen = len;
+        size_t cleanLen = strnlen(cleanLine, len);
+        if (cleanLen > longestLineLen)
+          longestLineLen = cleanLen;
 
         if (!find_label(cleanLine, (pass == 0))) {
           translate_line(cleanLine, outFile, (pass == 1));
