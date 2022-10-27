@@ -284,8 +284,6 @@ translate_file(FILE* inFile, FILE* outFile)
   char* line = (char*) malloc(LINE_MAX_LEN);
   size_t len = 0;
 
-  bool startJumpWritten = false;
-
   for (size_t pass = 0; pass < 2; ++pass) {
     fseek(inFile, 0, 0);
     iInputLine = 0;
