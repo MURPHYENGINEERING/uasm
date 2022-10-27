@@ -37,7 +37,7 @@ myvar:
   WORD          ; Allocate 8 bits of memory and call it myvar
 ```
 
-### Program output:
+### Assembler output:
 ```
 uASM - by Matt Murphy, for EEE 333 wth Seth Abraham
   Input file:   ucpu.asm
