@@ -21,9 +21,9 @@ If you don't specify `output_file` then it will use the name of the input file a
   ; - named variables
 
   JUMP start
-; Data can appear anywhere in the program, 
-; but you have to jump over it or execution will halt
-firstvar:
+
+
+firstvar:       ; Data can appear anywhere if you jump over it
   WORD
 
 start:
