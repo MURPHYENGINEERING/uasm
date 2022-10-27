@@ -8,11 +8,19 @@
 #include <string.h>
 #include <strings.h>
 
+// Maximum length of an input line
 #define LINE_MAX_LEN 1024
-#define LABEL_MAX_LEN 32
+// Maximum length of a label name
+#define LABEL_MAX_LEN 128
+// Number of spaces separating the input and output when printed to stdout
+#define PADDING_SEP 4
+// Maximum number of arguments that any opcode can have
+#define N_ARGS_MAX 8
 
+// Separates tokens in the input
 #define DELIM " \t"
 
+// Named jump addresses or variables
 typedef struct {
   char name[LABEL_MAX_LEN];
   size_t addr;
@@ -20,14 +28,18 @@ typedef struct {
 
 typedef enum {
   OP_JUMP  = 0b000011,
+  OP_JEQ   = 0b010100,
+  OP_JNE   = 0b011000,
+  OP_JGR   = 0b011100,
   OP_CALL  = 0b110000,
-  OP_RET   = 0b110100,
+  OP_RET   = 0b110001,
   OP_LOADI = 0b111000,
   OP_LOAD  = 0b101000,
   OP_STORE = 0b101100,
-  OP_ADDI  = 0b000100,
-  OP_ADDR  = 0b001000,
-  OP_ADDM  = 0b001100,
+  OP_ADD   = 0b000100,
+  OP_SUB   = 0b001000,
+  OP_MUL   = 0b001100,
+  OP_DIV   = 0b010000,
   OP_HALT  = 0b000000,
   OP_NOP   = 0b000001,
   OP_WORD  = 0b000000
@@ -35,8 +47,11 @@ typedef enum {
 
 typedef struct {
   Opcode opcode;
-  uint8_t reg;   // Specified register, or 0 if not specified
-  int16_t arg;   // Argument: constant, memory address, register index, or -1
+  uint8_t reg; // Target register, or 0 if not specified.
+               // The target register index becomes the low 2 bits of the opcode
+  // Opcode arguments appear as data between instructions
+  int16_t args[N_ARGS_MAX];
+  size_t nArgs;
   uint16_t mach; // Machine code translation
 } OP;
 
@@ -54,6 +69,9 @@ size_t curAddr    = 0;
 size_t longestLineLen = 0;
 
 
+/*
+ * Modify the given file name to remove the last extension that appears.
+ */
 static void
 strip_file_extension(char* fname)
 {
@@ -67,6 +85,9 @@ strip_file_extension(char* fname)
 }
 
 
+/*
+ * Modify the given string to remove whitespace from the beginning and end.
+ */
 static char*
 strip_whitespace(char* str)
 {
@@ -91,6 +112,9 @@ strip_whitespace(char* str)
 }
 
 
+/*
+ * Modify the given string to remove the first comment and everything following.
+ */
 static void
 strip_comments(char* str)
 {
@@ -100,6 +124,9 @@ strip_comments(char* str)
 }
 
 
+/*
+ * Signal an exception and terminate the program.
+ */
 static void
 expected(char const* msg)
 {
@@ -108,6 +135,12 @@ expected(char const* msg)
 }
 
 
+/*
+ * Search the given input line for a label name. If a name is found, create
+ * an entry in the label vector with the current PC address as its pointer.
+ *
+ * Return true if a label entry was created.
+ */
 static bool
 find_label(char* line, bool notify)
 {
@@ -132,6 +165,9 @@ find_label(char* line, bool notify)
 }
 
 
+/*
+ * Return true if the given operator names match.
+ */
 static bool
 isop(char const* search, char const* match)
 {
@@ -139,6 +175,10 @@ isop(char const* search, char const* match)
 }
 
 
+/*
+ * Read a letter register from the input and return the associated register
+ * index.
+ */
 static uint8_t
 get_register()
 {
@@ -150,8 +190,11 @@ get_register()
 }
 
 
+/*
+ * Read a constant literal from the given token string.
+ */
 static uint8_t
-get_const_ex(char* arg)
+get_const_from_token(char* arg)
 {
   if (*arg == '0') {
     if (*(arg + 1) == 'x') {
@@ -164,6 +207,9 @@ get_const_ex(char* arg)
 }
 
 
+/*
+ * Read a constant literal from the input.
+ */
 static uint8_t
 get_const()
 {
@@ -171,10 +217,17 @@ get_const()
   if (arg == NULL)
     expected("constant argument");
 
-  return get_const_ex(arg);
+  return get_const_from_token(arg);
 }
 
 
+/*
+ * Read and return an address from the input. If the input is a jump label,
+ * then return the address associated with that name.
+ *
+ * If emit is true then missing labels will throw an exception; otherwise they
+ * will be ignored
+ */
 static uint8_t
 get_address(bool emit)
 {
@@ -193,17 +246,25 @@ get_address(bool emit)
     }
     return 0;
   } else {
-    return get_const_ex(arg);
+    return get_const_from_token(arg);
   }
 }
 
 
+/*
+ * Translate the given line of input to machine code and optionally emit the
+ * result into the given output file, as well as to standard output.
+ *
+ * Translating without emitting is useful to keep track of the program counter
+ * as it's incremented by instructions with variable numbers of arguments.
+ */
 static void
 translate_line(char* line, FILE* of, bool emit)
 {
   char buf[128];
   if (emit) {
-    snprintf(buf, sizeof(buf)-1, "  %%-%lus", longestLineLen + 4);
+    // Left-justify the output and pad with spaces
+    snprintf(buf, sizeof(buf) - 1, "  %%-%lus", longestLineLen + PADDING_SEP);
     printf(buf, line);
   }
 
@@ -214,52 +275,100 @@ translate_line(char* line, FILE* of, bool emit)
   }
 
   OP op;
-  op.reg = 0;
-  op.arg = -1;
+  op.reg   = 0;
+  op.nArgs = 0;
 
   if (isop(tok, "LOADI")) {
-    op.opcode = OP_LOADI;
-    op.reg    = get_register();
-    op.arg    = get_const();
+    op.opcode  = OP_LOADI;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_const();
+
   } else if (isop(tok, "LOAD")) {
-    op.opcode = OP_LOAD;
-    op.reg    = get_register();
-    op.arg    = get_address(emit);
+    op.opcode  = OP_LOAD;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_address(emit);
+
   } else if (isop(tok, "STORE")) {
-    op.opcode = OP_STORE;
-    op.reg    = get_register();
-    op.arg    = get_address(emit);
-  } else if (isop(tok, "ADDI")) {
-    op.opcode = OP_ADDI;
-    op.reg    = get_register();
-    op.arg    = get_const();
-  } else if (isop(tok, "ADDR")) {
-    op.opcode = OP_ADDR;
-    op.reg    = get_register();
-    op.arg    = get_register();
-  } else if (isop(tok, "ADDM")) {
-    op.opcode = OP_ADDM;
-    op.reg    = get_register();
-    op.arg    = get_address(emit);
+    op.opcode  = OP_STORE;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_address(emit);
+
+  } else if (isop(tok, "ADD")) {
+    op.opcode  = OP_ADD;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+
+  } else if (isop(tok, "SUB")) {
+    op.opcode  = OP_SUB;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+
+  } else if (isop(tok, "MUL")) {
+    op.opcode  = OP_MUL;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+
+  } else if (isop(tok, "DIV")) {
+    op.opcode  = OP_DIV;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+
   } else if (isop(tok, "JUMP")) {
-    op.opcode = OP_JUMP;
-    op.arg    = get_address(emit);
+    op.opcode  = OP_JUMP;
+    op.args[0] = get_address(emit);
+
+  } else if (isop(tok, "JEQ")) {
+    op.opcode  = OP_JEQ;
+    op.nArgs   = 2;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+    op.args[1] = get_address(emit);
+
+  } else if (isop(tok, "JNE")) {
+    op.opcode  = OP_JNE;
+    op.nArgs   = 2;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+    op.args[1] = get_address(emit);
+
+  } else if (isop(tok, "JGR")) {
+    op.opcode  = OP_JGR;
+    op.nArgs   = 2;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+    op.args[1] = get_address(emit);
+
   } else if (isop(tok, "CALL")) {
-    op.opcode = OP_CALL;
-    op.arg    = get_address(emit);
+    op.opcode  = OP_CALL;
+    op.nArgs   = 1;
+    op.args[0] = get_address(emit);
+
   } else if (isop(tok, "RET")) {
     op.opcode = OP_RET;
+
   } else if (isop(tok, "NOP")) {
     op.opcode = OP_NOP;
+
   } else if (isop(tok, "HALT")) {
     op.opcode = OP_HALT;
+
   } else if (isop(tok, "WORD")) {
     op.opcode = OP_WORD;
+
   } else if (emit) {
     snprintf(buf, sizeof(buf) - 1, "opcode ('%s' is not valid)", tok);
     expected(buf);
   }
 
+  // The machine code of an opcode has the target register index in the low
+  // two bits.
   op.mach = op.opcode + op.reg;
 
   if (emit) {
@@ -267,23 +376,37 @@ translate_line(char* line, FILE* of, bool emit)
     printf("%02x  %02x\n", (unsigned int) curAddr, op.mach);
   }
 
-  if (op.arg > -1) {
+  for (size_t i = 0; i < op.nArgs; ++i) {
     ++curAddr;
     if (emit) {
-      fprintf(of, "%02x  %02x\n", (unsigned int) curAddr, op.arg);
-      snprintf(buf, sizeof(buf)-1, "  %%-%lus%%02x  %%02x\n", longestLineLen + 4);
-      printf(buf, "", curAddr, op.arg);
+      fprintf(of, "%02x  %02x\n", (unsigned int) curAddr, op.args[i]);
+      // Left-justify the output and pad with spaces
+      snprintf(
+          buf,
+          sizeof(buf) - 1,
+          "  %%-%lus%%02x  %%02x\n",
+          longestLineLen + PADDING_SEP);
+      printf(buf, "", curAddr, op.args[i]);
     }
   }
 }
 
 
+/*
+ * Translate every line in the given input file, emitting machine code into the
+ * given output file, as well as to standard output.
+ */
 static void
 translate_file(FILE* inFile, FILE* outFile)
 {
   char* line = (char*) malloc(LINE_MAX_LEN);
   size_t len = 0;
 
+  // The first pass finds labels. The input is translated so that the PC can be
+  // counted, but no output is emitted.
+
+  // The second pass emits translation output, replacing labels with their
+  // addresses.
   for (size_t pass = 0; pass < 2; ++pass) {
     fseek(inFile, 0, 0);
     iInputLine = 0;
@@ -294,26 +417,28 @@ translate_file(FILE* inFile, FILE* outFile)
     else
       printf("\nInstructions\n\n");
 
-    int read = getline(&line, &len, inFile);
-    while (read > -1) {
+    int read;
+    do {
+      read = getline(&line, &len, inFile);
       ++iInputLine;
 
       strip_comments(line);
+      // Don't change line because we need to free it later
       char* cleanLine = strip_whitespace(line);
 
-      if (*cleanLine != 0) {
-        size_t cleanLen = strnlen(cleanLine, len);
-        if (cleanLen > longestLineLen)
-          longestLineLen = cleanLen;
+      if (*cleanLine == '\0')
+        continue;
 
-        if (!find_label(cleanLine, (pass == 0))) {
-          translate_line(cleanLine, outFile, (pass == 1));
-          ++curAddr;
-        }
+      // Measure the longest line so we can left-justify and pad stdout
+      size_t cleanLen = strnlen(cleanLine, len);
+      if (cleanLen > longestLineLen)
+        longestLineLen = cleanLen;
+
+      if (!find_label(cleanLine, (pass == 0))) {
+        translate_line(cleanLine, outFile, (pass == 1));
+        ++curAddr;
       }
-
-      read = getline(&line, &len, inFile);
-    }
+    } while (read != -1);
 
     if (errno) {
       printf(
