@@ -27,24 +27,36 @@ typedef struct {
 } Label;
 
 typedef enum {
-  OP_WORD  = 0b000000,
-  OP_HALT  = 0b000000,
-  OP_NOP   = 0b000001,
-  OP_JUMP  = 0b000011,
-  OP_ADD   = 0b000100,
-  OP_SUB   = 0b001000,
-  OP_MUL   = 0b001100,
-  OP_DIV   = 0b010000,
-  OP_JEQ   = 0b010100,
-  OP_JNE   = 0b011000,
-  OP_JGR   = 0b011100,
-  OP_INC   = 0b100000,
-  OP_DEC   = 0b100100,
-  OP_LOAD  = 0b101000,
-  OP_STORE = 0b101100,
-  OP_CALL  = 0b110000,
-  OP_RET   = 0b110001,
-  OP_LOADI = 0b111000,
+  OP_WORD  = 0b00000000,
+  OP_HALT  = 0b00000000,
+  OP_NOP   = 0b00000001,
+
+  OP_LD    = 0b00111000,
+  OP_STORE = 0b00101100,
+  OP_LDI   = 0b00110100,
+  OP_MOV   = 0b00111100,
+
+  OP_ADD   = 0b00000100,
+  OP_SUB   = 0b00001000,
+  OP_MUL   = 0b00001100,
+  OP_DIV   = 0b00010000,
+
+  OP_AND   = 0b00010100,
+  OP_OR    = 0b00011000,
+  OP_XOR   = 0b00011100,
+  
+  OP_INC   = 0b00100000,
+  OP_DEC   = 0b00100100,
+
+  OP_CALL  = 0b10000000,
+  OP_RET   = 0b10000001,
+
+  OP_JUMP  = 0b11000000,
+  OP_JE    = 0b11000100,
+  OP_JNE   = 0b11001000,
+  OP_JGR   = 0b11001100,
+  OP_JZ    = 0b11010000,
+  OP_JNZ   = 0b11100000,
 } Opcode;
 
 typedef struct {
@@ -280,14 +292,14 @@ translate_line(char* line, FILE* of, bool emit)
   op.reg   = 0;
   op.nArgs = 0;
 
-  if (isop(tok, "LOADI")) {
-    op.opcode  = OP_LOADI;
+  if (isop(tok, "LDI")) {
+    op.opcode  = OP_LDI;
     op.nArgs   = 1;
     op.reg     = get_register();
     op.args[0] = get_const();
 
-  } else if (isop(tok, "LOAD")) {
-    op.opcode  = OP_LOAD;
+  } else if (isop(tok, "LD")) {
+    op.opcode  = OP_LD;
     op.nArgs   = 1;
     op.reg     = get_register();
     op.args[0] = get_address(emit);
@@ -297,6 +309,12 @@ translate_line(char* line, FILE* of, bool emit)
     op.nArgs   = 1;
     op.reg     = get_register();
     op.args[0] = get_address(emit);
+
+  } else if (isop(tok, "MOV")) {
+    op.opcode  = OP_MOV;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
 
   } else if (isop(tok, "INC")) {
     op.opcode  = OP_INC;
@@ -332,12 +350,30 @@ translate_line(char* line, FILE* of, bool emit)
     op.reg     = get_register();
     op.args[0] = get_register();
 
-  } else if (isop(tok, "JUMP")) {
+  } else if (isop(tok, "AND")) {
+    op.opcode  = OP_AND;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+
+  } else if (isop(tok, "OR")) {
+    op.opcode  = OP_OR;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+
+  } else if (isop(tok, "XOR")) {
+    op.opcode  = OP_XOR;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+
+  } else if (isop(tok, "JMP")) {
     op.opcode  = OP_JUMP;
     op.args[0] = get_address(emit);
 
-  } else if (isop(tok, "JEQ")) {
-    op.opcode  = OP_JEQ;
+  } else if (isop(tok, "JE")) {
+    op.opcode  = OP_JE;
     op.nArgs   = 2;
     op.reg     = get_register();
     op.args[0] = get_register();
@@ -356,6 +392,18 @@ translate_line(char* line, FILE* of, bool emit)
     op.reg     = get_register();
     op.args[0] = get_register();
     op.args[1] = get_address(emit);
+
+  } else if (isop(tok, "JZ")) {
+    op.opcode  = OP_JZ;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_address(emit);
+
+  } else if (isop(tok, "JNZ")) {
+    op.opcode  = OP_JNZ;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_address(emit);
 
   } else if (isop(tok, "CALL")) {
     op.opcode  = OP_CALL;

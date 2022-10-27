@@ -11,6 +11,12 @@ cmake --build . --target all
 
 If you don't specify `output_file` then it will use the name of the input file and add the extension `.dat`. If you don't specify filenames then it will use `ucpu.asm` and output to `ucpu.dat`.
 
+### Instructions
+| Example                                              | First argument      | Second argument | Function                                               |
+|------------------------------------------------------|---------------------|-----------------|--------------------------------------------------------|
+| `ldi a 0xff`<br/> `ldi b 0b1010`<br/> `ldi c 3`<br/> | Desination register | Source literal  | Load the given constant into the destination register. |
+|                                                      |                     |                 |                                                        |
+|                                                      |                     |                 |                                                        |
 ### Example program (`ucpu.asm`):
 ```
   ; Demonstrated here:
@@ -29,7 +35,7 @@ start:
   loadi a 0b1   ; Load a binary literal constant into register A
   LOADI B 0x2   ; Load a hex literal constant into register B
 
-  ADDR  A B     ; Add the contents of register B into register A
+  ADD  A B     ; Add the contents of register B into register A
   STORE A myvar ; Store the result into the memory address called myvar
   JUMP  end     ; Skip the next instruction
   ADDI  A 2     ; Add 2 into the contents of register A
