@@ -1,4 +1,4 @@
-# lab4asm
+# uasm
 Assembly language for a microcoded CPU implemented on FPGA, for EEE 333 with Seth Abraham
 
 ### Usage:

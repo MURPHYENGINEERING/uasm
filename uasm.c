@@ -27,22 +27,24 @@ typedef struct {
 } Label;
 
 typedef enum {
+  OP_WORD  = 0b000000,
+  OP_HALT  = 0b000000,
+  OP_NOP   = 0b000001,
   OP_JUMP  = 0b000011,
-  OP_JEQ   = 0b010100,
-  OP_JNE   = 0b011000,
-  OP_JGR   = 0b011100,
-  OP_CALL  = 0b110000,
-  OP_RET   = 0b110001,
-  OP_LOADI = 0b111000,
-  OP_LOAD  = 0b101000,
-  OP_STORE = 0b101100,
   OP_ADD   = 0b000100,
   OP_SUB   = 0b001000,
   OP_MUL   = 0b001100,
   OP_DIV   = 0b010000,
-  OP_HALT  = 0b000000,
-  OP_NOP   = 0b000001,
-  OP_WORD  = 0b000000
+  OP_JEQ   = 0b010100,
+  OP_JNE   = 0b011000,
+  OP_JGR   = 0b011100,
+  OP_INC   = 0b100000,
+  OP_DEC   = 0b100100,
+  OP_LOAD  = 0b101000,
+  OP_STORE = 0b101100,
+  OP_CALL  = 0b110000,
+  OP_RET   = 0b110001,
+  OP_LOADI = 0b111000,
 } Opcode;
 
 typedef struct {
@@ -295,6 +297,16 @@ translate_line(char* line, FILE* of, bool emit)
     op.nArgs   = 1;
     op.reg     = get_register();
     op.args[0] = get_address(emit);
+
+  } else if (isop(tok, "INC")) {
+    op.opcode  = OP_INC;
+    op.nArgs   = 0;
+    op.reg     = get_register();
+
+  } else if (isop(tok, "DEC")) {
+    op.opcode  = OP_DEC;
+    op.nArgs   = 0;
+    op.reg     = get_register();
 
   } else if (isop(tok, "ADD")) {
     op.opcode  = OP_ADD;
