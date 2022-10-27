@@ -5,6 +5,12 @@
   ; - jump to labels
   ; - named variables
 
+  JUMP start
+; Data can appear anywhere in the program, but you have to jump over it
+firstvar:
+  WORD
+
+start:
   loadi a 0b1   ; Load a binary literal constant into register A
   LOADI B 0x2   ; Load a hex literal constant into register B
 
@@ -17,6 +23,5 @@
 end:
   HALT
 
-; Data must appear at the end of your program!
 myvar:
   WORD          ; Allocate 8 bits of memory and call it myvar

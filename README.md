@@ -20,6 +20,13 @@ If you don't specify `output_file` then it will use the name of the input file a
   ; - jump to labels
   ; - named variables
 
+  JUMP start
+; Data can appear anywhere in the program, 
+; but you have to jump over it or execution will halt
+firstvar:
+  WORD
+
+start:
   loadi a 0b1   ; Load a binary literal constant into register A
   LOADI B 0x2   ; Load a hex literal constant into register B
 
@@ -32,7 +39,6 @@ If you don't specify `output_file` then it will use the name of the input file a
 end:
   HALT
 
-; Data must appear at the end of your program!
 myvar:
   WORD          ; Allocate 8 bits of memory and call it myvar
 ```
@@ -45,41 +51,49 @@ uASM - by Matt Murphy, for EEE 333 wth Seth Abraham
 
 Labels
 
-  end        = 0c on line 17
-  myvar      = 0d on line 21
+  firstvar   = 02 on line 10
+  start      = 03 on line 13
+  end        = 0f on line 23
+  myvar      = 10 on line 26
 
 Instructions
 
-  loadi a 0b1      00  38
-                   01  01
-  LOADI B 0x2      02  39
-                   03  02
-  ADDR  A B        04  08
-                   05  01
-  STORE A myvar    06  2c
-                   07  0d
-  JUMP  end        08  03
-                   09  0c
-  ADDI  A 2        0a  04
-                   0b  02
-  HALT             0c  00
-  WORD             0d  00
+  JUMP start       00  03
+                   01  03
+  WORD             02  00
+  loadi a 0b1      03  38
+                   04  01
+  LOADI B 0x2      05  39
+                   06  02
+  ADDR  A B        07  08
+                   08  01
+  STORE A myvar    09  2c
+                   0a  10
+  JUMP  end        0b  03
+                   0c  0f
+  ADDI  A 2        0d  04
+                   0e  02
+  HALT             0f  00
+  WORD             10  00
 ```
 
 ### Resulting `loader.dat` file:
 ```
-00  38
-01  01
-02  39
-03  02
-04  08
-05  01
-06  2c
-07  0d
-08  03
-09  0c
-0a  04
-0b  02
-0c  00
-0d  00
+00  03
+01  03
+02  00
+03  38
+04  01
+05  39
+06  02
+07  08
+08  01
+09  2c
+0a  10
+0b  03
+0c  0f
+0d  04
+0e  02
+0f  00
+10  00
 ```
