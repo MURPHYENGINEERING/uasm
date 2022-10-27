@@ -232,6 +232,7 @@ translate_line(char* line, FILE* of, bool emit)
   } else if (isop(tok, "ADDI")) {
     op.opcode = OP_ADDI;
     op.reg    = get_register();
+    op.arg    = get_const();
   } else if (isop(tok, "ADDR")) {
     op.opcode = OP_ADDR;
     op.reg    = get_register();
@@ -239,6 +240,7 @@ translate_line(char* line, FILE* of, bool emit)
   } else if (isop(tok, "ADDM")) {
     op.opcode = OP_ADDM;
     op.reg    = get_register();
+    op.arg    = get_address(emit);
   } else if (isop(tok, "JUMP")) {
     op.opcode = OP_JUMP;
     op.arg    = get_address(emit);

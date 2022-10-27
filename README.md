@@ -45,8 +45,8 @@ uASM - by Matt Murphy, for EEE 333 wth Seth Abraham
 
 Labels
 
-  end        = 0b on line 17
-  myvar      = 0c on line 21
+  end        = 0c on line 17
+  myvar      = 0d on line 21
 
 Instructions
 
@@ -57,12 +57,13 @@ Instructions
   ADDR  A B        04  08
                    05  01
   STORE A myvar    06  2c
-                   07  0c
+                   07  0d
   JUMP  end        08  03
-                   09  0b
+                   09  0c
   ADDI  A 2        0a  04
-  HALT             0b  00
-  WORD             0c  00
+                   0b  02
+  HALT             0c  00
+  WORD             0d  00
 ```
 
 ### Resulting `loader.dat` file:
@@ -74,10 +75,11 @@ Instructions
 04  08
 05  01
 06  2c
-07  0c
+07  0d
 08  03
-09  0b
+09  0c
 0a  04
-0b  00
+0b  02
 0c  00
+0d  00
 ```
