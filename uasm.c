@@ -265,9 +265,9 @@ static uint8_t
 get_const_from_token(char* arg)
 {
   if (*arg == '0') {
-    if (*(arg + 1) == 'x') {
+    if (*(arg + 1) == 'x' || *(arg+1) == 'X') {
       return strtoul(arg, NULL, 16);
-    } else if (*(arg + 1) == 'b') {
+    } else if (*(arg + 1) == 'b' || *(arg+1) == 'B') {
       return strtoul(arg + 2, NULL, 2);
     }
   }

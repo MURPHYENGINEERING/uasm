@@ -1,5 +1,5 @@
-  ldi a 1
-  ldi b 2
+  ldi a 0X01
+  ldi b 0B10
   jmp fun1
 ret: 
   ld d myvar
