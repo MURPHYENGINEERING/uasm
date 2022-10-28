@@ -372,12 +372,10 @@ translate_line(char* line, FILE* of, bool emit)
 
   } else if (isop(tok, "INC")) {
     op.opcode = OP_INC;
-    op.nArgs  = 0;
     op.reg    = get_register();
 
   } else if (isop(tok, "DEC")) {
     op.opcode = OP_DEC;
-    op.nArgs  = 0;
     op.reg    = get_register();
 
   } else if (isop(tok, "ADD")) {
