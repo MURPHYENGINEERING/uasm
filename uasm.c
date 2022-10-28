@@ -500,8 +500,7 @@ translate_line(char* line, FILE* of, bool emit)
     expected(buf);
   }
 
-  // The machine code of an opcode has the target register index in the low
-  // two bits.
+  // The machine code of an opcode has the target register in the low two bits.
   op.mach = op.opcode + op.reg;
 
   if (emit) {
@@ -535,6 +534,7 @@ translate_line(char* line, FILE* of, bool emit)
 
       case OF_MIF:
         fprintf(of, "  %02x : %02x;\n", curAddr, op.args[i]);
+        // Left-justify the output and pad with spaces
         snprintf(
             buf,
             sizeof(buf) - 1,
