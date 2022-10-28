@@ -11,6 +11,10 @@ cmake --build . --target all
 
 If you don't specify `output_file` then it will use the name of the input file and add the extension `.dat`. If you don't specify filenames then it will use `ucpu.asm` and output to `ucpu.dat`.
 
+If the output has the extension `.dat` then the output will be in the EEE333 `loader.dat` file format.
+
+If the output has the extension `.mif` then the output will be in the Intel Memory Initialization File format.
+
 ### Instructions
 | Example<img width=300/>                       | First argument                  | Second argument                | Third argument               | Description                                                                                                                                         |
 |-----------------------------------------------|---------------------------------|--------------------------------|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
