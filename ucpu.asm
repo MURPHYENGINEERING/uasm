@@ -1,4 +1,4 @@
-  ldi   a 7       ; literals can be 0x7, 0b101, or 7
+  ldi   a 7       ; literals can be 0x7, 0b111, or 7
   push  a         ; save the contents of register A
   call  fun
   pop   a         ; restore the contents of register A
