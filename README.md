@@ -1,7 +1,7 @@
 # uasm
 Assembly language for a microcoded CPU implemented on FPGA, for EEE 333 with Seth Abraham
 
-### Usage:
+### Usage
 
 ```
 cmake .
@@ -30,46 +30,35 @@ If you don't specify `output_file` then it will use the name of the input file a
 | `jmp mylabel`<br/>`jmp 0xff`                  | Destination address or label    |                                |                              | Jump to the given address. The address can be specified literally or referred to with a label.                                                      |
 | `je a b mylabel`                              | LHS register                    | RHS register                   | Destination address or label | Jump to the given address if the contents of the two registers are equal.                                                                           |
 | `jne a b mylabel`                             | LHS register                    | RHS register                   | Destination address or label | Jump to the given address if the contents of the registers are not equal.                                                                           |
-| `jg a b mylabel`                              | LHS register                    | RHS register                   | Destination address or label | Jump to the given address if the contents of the LHS register are greater than the contents of the RHS register.                                    |
+| `jgr a b mylabel`                             | LHS register                    | RHS register                   | Destination address or label | Jump to the given address if the contents of the LHS register are greater than the contents of the RHS register.                                    |
 | `jz a mylabel`                                | LHS register                    | Destination address or label   |                              | Jump to the given address if the contents of the LHS register are zero.                                                                             |
-| `jnz a mylabel`                               | LHS register                    | Destination address or label   |                              | Jump to the given address if the contents of the LHS register are not zero.                                                                         |
+| `jnz a mylabel`                               | LHS register                    | Destination address            |                              | Jump to the given address if the contents of the LHS register are not zero.                                                                         |
 | `call mylabel`                                | Destination address or label    |                                |                              | Push the next instruction address to the stack and jump to the given address.                                                                       |
 | `ret`                                         |                                 |                                |                              | Pop an instruction address from the stack and jump to it.                                                                                           |
+| `push a`                                      | Source register                 |                                |                              | Push the contents of the source register onto the stack.                                                                                            |
+| `pop b`                                       | Destination register            |                                |                              | Pop the top of the stack into the destination register.                                                                                             |
 
 
-### Example program (`ucpu.asm`):
+### Example program (`ucpu.asm`)
 ```
-  ; Demonstrated here:
-  ; - comments
-  ; - binary, hex, and decimal literals
-  ; - named registers
-  ; - jump to labels
-  ; - named variables
+  ldi   a 7       ; literals can be 0x7, 0b101, or 7
+  push  a         ; save the contents of register A
+  call  fun
+  pop   a         ; restore the contents of register A
+  ld    b myvar   ; read B from memory at myvar
+  add   a b       ; add B into A
+  halt            ; result: A = 10, B = 3
 
-  JUMP start
-
-firstvar:       ; Data can appear anywhere if you jump over it
-  WORD
-
-start:
-  loadi a 0b1   ; Load a binary literal constant into register A
-  LOADI B 0x2   ; Load a hex literal constant into register B
-
-  ADD  A B     ; Add the contents of register B into register A
-  STORE A myvar ; Store the result into the memory address called myvar
-  JUMP  end     ; Skip the next instruction
-  ADDI  A 2     ; Add 2 into the contents of register A
-                ; If it works correctly then this should be skipped,
-                ; and the value of myvar will be 3
-end:
-  load  c myvar
-  HALT
+fun: 
+  ldi   a 3       ; interfere with register A
+  store myvar a   ; write A into memory at myvar
+  ret
 
 myvar:
-  WORD          ; Allocate 8 bits of memory and call it myvar
+  word            ; allocate 8 bits at a named location
 ```
 
-### Assembler output:
+### Assembler output
 ```
 uASM - by Matt Murphy, for EEE 333 wth Seth Abraham
   Input file:   ucpu.asm
@@ -77,53 +66,47 @@ uASM - by Matt Murphy, for EEE 333 wth Seth Abraham
 
 Labels
 
-  firstvar   = 02 on line 10
-  start      = 03 on line 13
-  end        = 0f on line 23
-  myvar      = 12 on line 27
+  fun        = 0b on line 9
+  myvar      = 10 on line 14
 
 Instructions
 
-  JUMP start       00  03
-                   01  03
-  WORD             02  00
-  loadi a 0b1      03  38
-                   04  01
-  LOADI B 0x2      05  39
-                   06  02
-  ADDR  A B        07  08
-                   08  01
-  STORE A myvar    09  2c
-                   0a  12
-  JUMP  end        0b  03
-                   0c  0f
-  ADDI  A 2        0d  04
-                   0e  02
-  load  c myvar    0f  2a
-                   10  12
-  HALT             11  00
-  WORD             12  00
+  ldi a 7          00  34
+                   01  07
+  push a           02  84
+  call fun         03  80
+                   04  0b
+  pop a            05  88
+  ld b myvar       06  39
+                   07  10
+  add a b          08  04
+                   09  01
+  halt             0a  00
+  ldi a 3          0b  34
+                   0c  03
+  store myvar a    0d  2c
+                   0e  10
+  ret              0f  81
+  word             10  00
 ```
 
-### Resulting `loader.dat` file:
+### Resulting `loader.dat` file
 ```
-00  03
-01  03
-02  00
-03  38
-04  01
-05  39
-06  02
-07  08
-08  01
-09  2c
-0a  12
-0b  03
-0c  0f
-0d  04
-0e  02
-0f  2a
-10  12
-11  00
-12  00
+00  34
+01  07
+02  84
+03  80
+04  0b
+05  88
+06  39
+07  10
+08  04
+09  01
+0a  00
+0b  34
+0c  03
+0d  2c
+0e  10
+0f  81
+10  00
 ```
