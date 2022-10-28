@@ -54,7 +54,7 @@ typedef enum {
   OP_JUMP  = 0b11000000,
   OP_JE    = 0b11000100,
   OP_JNE   = 0b11001000,
-  OP_JGR   = 0b11001100,
+  OP_JG    = 0b11001100,
   OP_JZ    = 0b11010000,
   OP_JNZ   = 0b11100000,
 } Opcode;
@@ -307,8 +307,8 @@ translate_line(char* line, FILE* of, bool emit)
   } else if (isop(tok, "STORE")) {
     op.opcode  = OP_STORE;
     op.nArgs   = 1;
-    op.reg     = get_register();
     op.args[0] = get_address(emit);
+    op.reg     = get_register();
 
   } else if (isop(tok, "MOV")) {
     op.opcode  = OP_MOV;
@@ -386,8 +386,8 @@ translate_line(char* line, FILE* of, bool emit)
     op.args[0] = get_register();
     op.args[1] = get_address(emit);
 
-  } else if (isop(tok, "JGR")) {
-    op.opcode  = OP_JGR;
+  } else if (isop(tok, "JG")) {
+    op.opcode  = OP_JG;
     op.nArgs   = 2;
     op.reg     = get_register();
     op.args[0] = get_register();
