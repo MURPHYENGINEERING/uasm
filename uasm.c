@@ -44,7 +44,9 @@ typedef enum {
   OP_AND   = 0b00010100,
   OP_OR    = 0b00011000,
   OP_XOR   = 0b00011100,
-  
+  OP_SHL   = 0b01101100,
+  OP_SHR   = 0b01110000,
+
   OP_INC   = 0b00100000,
   OP_DEC   = 0b00100100,
 
@@ -367,6 +369,18 @@ translate_line(char* line, FILE* of, bool emit)
 
   } else if (isop(tok, "XOR")) {
     op.opcode  = OP_XOR;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+
+  } else if (isop(tok, "SHL")) {
+    op.opcode  = OP_SHL;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+
+  } else if (isop(tok, "SHR")) {
+    op.opcode  = OP_SHR;
     op.nArgs   = 1;
     op.reg     = get_register();
     op.args[0] = get_register();
