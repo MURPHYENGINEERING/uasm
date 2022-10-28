@@ -1,7 +1,7 @@
 # uasm
 Assembly language for a microcoded CPU implemented on FPGA, for EEE 333 with Seth Abraham
 
-### Usage:
+### Usage
 
 ```
 cmake .
@@ -39,7 +39,7 @@ If you don't specify `output_file` then it will use the name of the input file a
 | `pop b`                                       | Destination register            |                                |                              | Pop the top of the stack into the destination register.                                                                                             |
 
 
-### Example program (`ucpu.asm`):
+### Example program (`ucpu.asm`)
 ```
   ldi   a 7       ; literals can be 0x7, 0b101, or 7
   push  a         ; save the contents of register A
@@ -58,7 +58,7 @@ myvar:
   word            ; allocate 8 bits at a named location
 ```
 
-### Assembler output:
+### Assembler output
 ```
 uASM - by Matt Murphy, for EEE 333 wth Seth Abraham
   Input file:   ucpu.asm
@@ -90,7 +90,7 @@ Instructions
   word             10  00
 ```
 
-### Resulting `loader.dat` file:
+### Resulting `loader.dat` file
 ```
 00  34
 01  07
