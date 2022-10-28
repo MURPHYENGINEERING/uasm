@@ -51,6 +51,9 @@ typedef enum {
   OP_CALL  = 0b10000000,
   OP_RET   = 0b10000001,
 
+  OP_PUSH  = 0b10000100,
+  OP_POP   = 0b10001000,
+
   OP_JUMP  = 0b11000000,
   OP_JE    = 0b11000100,
   OP_JNE   = 0b11001000,
@@ -412,6 +415,14 @@ translate_line(char* line, FILE* of, bool emit)
 
   } else if (isop(tok, "RET")) {
     op.opcode = OP_RET;
+
+  } else if (isop(tok, "PUSH")) {
+    op.opcode = OP_PUSH;
+    op.reg    = get_register();
+
+  } else if (isop(tok, "POP")) {
+    op.opcode = OP_POP;
+    op.reg    = get_register();
 
   } else if (isop(tok, "NOP")) {
     op.opcode = OP_NOP;
