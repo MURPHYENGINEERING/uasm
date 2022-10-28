@@ -11,7 +11,7 @@
 // Specifies the default output file format
 // .dat : loader.dat format
 // .mif : Memory Initialization File format
-#define DEFAULT_OUTPUT_EXTENSION ".mif"
+#define DEFAULT_OUTPUT_EXTENSION ".dat"
 // TODO: get these from command line arguments
 // and actually use them to format opcodes
 #define WORD_WIDTH 8
@@ -40,9 +40,9 @@ typedef enum {
   OP_HALT = 0b00000000,
   OP_NOP  = 0b00000001,
 
-  OP_LD    = 0b10100000,
-  OP_STORE = 0b10110000,
-  OP_LDI   = 0b11100000,
+  OP_LD    = 0b00101000,
+  OP_STORE = 0b00101100,
+  OP_LDI   = 0b00111000,
   OP_MOV   = 0b00111100,
 
   OP_ADD = 0b00000100,
@@ -65,7 +65,7 @@ typedef enum {
   OP_PUSH = 0b10000100,
   OP_POP  = 0b10001000,
 
-  OP_JUMP = 0b00001100,
+  OP_JUMP = 0b00000011,
   OP_JE   = 0b11000100,
   OP_JNE  = 0b11001000,
   OP_JG   = 0b11001100,
@@ -436,6 +436,7 @@ translate_line(char* line, FILE* of, bool emit)
 
   } else if (isop(tok, "JMP")) {
     op.opcode  = OP_JUMP;
+    op.nArgs   = 1;
     op.args[0] = get_address(emit);
 
   } else if (isop(tok, "JE")) {
