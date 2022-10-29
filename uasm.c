@@ -109,6 +109,7 @@ size_t longestLineLen = 0;
 
 // Thanks to Antti Haapala for cross-platform getline
 // https://stackoverflow.com/a/47229318/9945076
+#ifdef _MSC_VER
 size_t getline(char **lineptr, size_t *n, FILE *stream) {
     size_t pos;
     int c;
@@ -156,6 +157,7 @@ size_t getline(char **lineptr, size_t *n, FILE *stream) {
     (*lineptr)[pos] = '\0';
     return pos;
 }
+#endif
 
 
 static void
