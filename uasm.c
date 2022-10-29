@@ -1,17 +1,23 @@
 #include <ctype.h>
 #include <errno.h>
-#include <libgen.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _MSC_VER 
+//not #if defined(_WIN32) || defined(_WIN64) because we have strncasecmp in mingw
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#else
 #include <strings.h>
+#endif
 
 // Specifies the default output file format
 // .dat : loader.dat format
 // .mif : Memory Initialization File format
-#define DEFAULT_OUTPUT_EXTENSION ".dat"
+#define DEFAULT_OUTPUT_EXTENSION ".mif"
 // TODO: get these from command line arguments
 // and actually use them to format opcodes
 #define WORD_WIDTH 8
@@ -32,7 +38,7 @@
 // Named jump addresses or variables
 typedef struct {
   char name[LABEL_MAX_LEN];
-  size_t addr;
+  uint8_t addr;
 } Label;
 
 typedef enum {
@@ -100,6 +106,56 @@ unsigned int curAddr    = 0;
 // For left-justifying the output
 size_t longestLineLen = 0;
 
+
+// Thanks to Antti Haapala for cross-platform getline
+// https://stackoverflow.com/a/47229318/9945076
+size_t getline(char **lineptr, size_t *n, FILE *stream) {
+    size_t pos;
+    int c;
+
+    if (lineptr == NULL || stream == NULL || n == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    c = getc(stream);
+    if (c == EOF) {
+        return -1;
+    }
+
+    if (*lineptr == NULL) {
+        *lineptr = malloc(128);
+        if (*lineptr == NULL) {
+            return -1;
+        }
+        *n = 128;
+    }
+
+    pos = 0;
+    while(c != EOF) {
+        if (pos + 1 >= *n) {
+            size_t new_size = *n + (*n >> 2);
+            if (new_size < 128) {
+                new_size = 128;
+            }
+            char *new_ptr = realloc(*lineptr, new_size);
+            if (new_ptr == NULL) {
+                return -1;
+            }
+            *n = new_size;
+            *lineptr = new_ptr;
+        }
+
+        ((unsigned char *)(*lineptr))[pos ++] = c;
+        if (c == '\n') {
+            break;
+        }
+        c = getc(stream);
+    }
+
+    (*lineptr)[pos] = '\0';
+    return pos;
+}
 
 
 static void
@@ -218,7 +274,7 @@ find_label(char* line, bool notify)
     if (strnlen(line, LINE_MAX_LEN) == 0)
       expected("label declaration");
 
-    strlcpy(labels[nLabels].name, line, LABEL_MAX_LEN);
+    strncpy(labels[nLabels].name, line, LABEL_MAX_LEN);
     labels[nLabels].addr = curAddr;
     if (notify)
       printf(
@@ -572,7 +628,7 @@ translate_file(FILE* inFile, FILE* outFile)
     else
       printf("\nInstructions\n\n");
 
-    int read;
+    size_t read;
     do {
       read = getline(&line, &len, inFile);
       ++iInputLine;
@@ -620,7 +676,7 @@ main(int argc, char* argv[])
     outFilename = argv[2];
   } else {
     char buf[FILENAME_MAX];
-    strncpy(buf, basename(inFilename), sizeof(buf) - 1);
+    strncpy(buf, inFilename, sizeof(buf) - 1);
     strip_filename_ext(buf);
     strncat(buf, DEFAULT_OUTPUT_EXTENSION, sizeof(buf) - 1);
     outFilename = buf;
