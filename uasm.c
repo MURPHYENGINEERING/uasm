@@ -36,41 +36,41 @@ typedef struct {
 } Label;
 
 typedef enum {
-  OP_WORD = 0b00000000,
-  OP_HALT = 0b00000000,
-  OP_NOP  = 0b00000001,
+  OP_WORD  = 0b00000000,
+  OP_HALT  = 0b00000000,
+  OP_NOP   = 0b00000001,
 
   OP_LD    = 0b00101000,
-  OP_STORE = 0b00101100,
   OP_LDI   = 0b00111000,
+  OP_STORE = 0b00101100,
   OP_MOV   = 0b00111100,
 
-  OP_ADD = 0b00000100,
-  OP_SUB = 0b00001000,
-  OP_MUL = 0b10001100,
-  OP_DIV = 0b00010000,
+  OP_ADD   = 0b00000100,
+  OP_SUB   = 0b00001000,
+  OP_MUL   = 0b00001100,
+  OP_DIV   = 0b00010000,
 
-  OP_AND = 0b00010100,
-  OP_OR  = 0b00011000,
-  OP_XOR = 0b00011100,
-  OP_SHL = 0b01101100,
-  OP_SHR = 0b01110000,
+  OP_AND   = 0b00010100,
+  OP_OR    = 0b00011000,
+  OP_XOR   = 0b00011100,
+  OP_SHL   = 0b01101100,
+  OP_SHR   = 0b01110000,
 
-  OP_INC = 0b00100000,
-  OP_DEC = 0b00100100,
+  OP_INC   = 0b00100000,
+  OP_DEC   = 0b00100100,
 
-  OP_CALL = 0b10000000,
-  OP_RET  = 0b10000001,
+  OP_CALL  = 0b10000000,
+  OP_RET   = 0b10000001,
 
-  OP_PUSH = 0b10000100,
-  OP_POP  = 0b10001000,
+  OP_PUSH  = 0b10000100,
+  OP_POP   = 0b10001000,
 
-  OP_JUMP = 0b00000011,
-  OP_JE   = 0b11000100,
-  OP_JNE  = 0b11001000,
-  OP_JG   = 0b11001100,
-  OP_JZ   = 0b11010000,
-  OP_JNZ  = 0b11100100,
+  OP_JUMP  = 0b00000011,
+  OP_JE    = 0b11000100,
+  OP_JNE   = 0b11001000,
+  OP_JG    = 0b11001100,
+  OP_JZ    = 0b11010000,
+  OP_JNZ   = 0b11100100,
 } Opcode;
 
 typedef struct {
@@ -343,8 +343,7 @@ translate_line(char* line, FILE* of, bool emit)
   }
 
   OP op;
-  op.reg   = 0;
-  op.nArgs = 0;
+  memset(&op, 0, sizeof(OP));
 
   if (isop(tok, "LDI")) {
     op.opcode  = OP_LDI;
