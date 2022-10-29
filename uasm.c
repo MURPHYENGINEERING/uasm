@@ -107,60 +107,6 @@ unsigned int curAddr = 0;
 size_t longestLineLen = 0;
 
 
-// Thanks to Antti Haapala for cross-platform getline
-// https://stackoverflow.com/a/47229318/9945076
-#ifdef _MSC_VER
-size_t
-getline(char** lineptr, size_t* n, FILE* stream)
-{
-  size_t pos;
-  int c;
-
-  if (lineptr == NULL || stream == NULL || n == NULL) {
-    errno = EINVAL;
-    return -1;
-  }
-
-  c = getc(stream);
-  if (c == EOF) {
-    return -1;
-  }
-
-  if (*lineptr == NULL) {
-    *lineptr = malloc(128);
-    if (*lineptr == NULL) {
-      return -1;
-    }
-    *n = 128;
-  }
-
-  pos = 0;
-  while (c != EOF) {
-    if (pos + 1 >= *n) {
-      size_t new_size = *n + (*n >> 2);
-      if (new_size < 128) {
-        new_size = 128;
-      }
-      char* new_ptr = realloc(*lineptr, new_size);
-      if (new_ptr == NULL) {
-        return -1;
-      }
-      *n       = new_size;
-      *lineptr = new_ptr;
-    }
-
-    ((unsigned char*) (*lineptr))[pos++] = c;
-    if (c == '\n') {
-      break;
-    }
-    c = getc(stream);
-  }
-
-  (*lineptr)[pos] = '\0';
-  return pos;
-}
-#endif
-
 
 static void
 emit_mif_header(FILE* of, size_t width, size_t depth)
@@ -614,7 +560,6 @@ translate_line(char* line, FILE* of, bool emit)
 static void
 translate_file(FILE* inFile, FILE* outFile)
 {
-  char* line = (char*) malloc(LINE_MAX_LEN);
   size_t len = 0;
 
   // The first pass finds labels. The input is translated so that the PC can be
@@ -632,9 +577,9 @@ translate_file(FILE* inFile, FILE* outFile)
     else
       printf("\nInstructions\n\n");
 
-    size_t read;
-    do {
-      read = getline(&line, &len, inFile);
+    char buf[8192];
+    char* line;
+      while ((line = fgets(buf, sizeof(buf), inFile))) {
       ++iInputLine;
 
       strip_comments(line);
@@ -644,10 +589,8 @@ translate_file(FILE* inFile, FILE* outFile)
       if (*cleanLine == '\0')
         continue;
 
-      printf("%s (%d)\n", cleanLine, strlen(cleanLine));
-
       // Measure the longest line so we can left-justify and pad stdout
-      size_t cleanLen = strnlen(cleanLine, len);
+      size_t cleanLen = strlen(cleanLine);
       if (cleanLen > longestLineLen)
         longestLineLen = cleanLen;
 
@@ -655,7 +598,7 @@ translate_file(FILE* inFile, FILE* outFile)
         translate_line(cleanLine, outFile, (pass == 1));
         ++curAddr;
       }
-    } while (read != -1);
+    }
 
     if (errno) {
       printf(
@@ -665,8 +608,6 @@ translate_file(FILE* inFile, FILE* outFile)
       break;
     }
   }
-
-  free(line);
 }
 
 
