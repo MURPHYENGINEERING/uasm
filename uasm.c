@@ -558,7 +558,7 @@ translate_line(char* line, FILE* of, bool emit)
         snprintf(
             buf,
             sizeof(buf) - 1,
-            "  %%-%lus%%02x : %%02x\n",
+            "  %%-%lus%%02x : %%02x;\n",
             longestLineLen + PADDING_SEP);
         printf(buf, "", curAddr, op.args[i]);
         break;
