@@ -35,11 +35,6 @@
 // Separates tokens in the input
 #define DELIM " \t"
 
-// Named jump addresses or variables
-typedef struct {
-  char name[LABEL_MAX_LEN];
-  uint8_t addr;
-} Label;
 
 typedef enum {
   OP_WORD  = 0b00000000,
@@ -48,7 +43,9 @@ typedef enum {
 
   OP_LD    = 0b00101000,
   OP_LDI   = 0b00111000,
+  OP_RLD   = 0b10111000,
   OP_STORE = 0b00101100,
+  OP_RSTORE= 0b10101100,
   OP_MOV   = 0b00111100,
 
   OP_ADD   = 0b00000100,
@@ -84,15 +81,21 @@ typedef struct {
   uint8_t reg; // Target register, or 0 if not specified.
                // The target register index becomes the low 2 bits of the opcode
   // Opcode arguments appear as data between instructions
-  int16_t args[N_ARGS_MAX];
+  uint32_t args[N_ARGS_MAX];
   size_t nArgs;
-  uint16_t mach; // Machine code translation
+  uint32_t mach; // Machine code translation
 } OP;
 
 
 typedef enum { OF_LOADER, OF_MIF } OutputFormat;
 OutputFormat outputFormat;
 
+
+// Named jump addresses or variables
+typedef struct {
+  char name[LABEL_MAX_LEN];
+  uint32_t addr;
+} Label;
 
 // Jump addresses
 Label labels[1024];
@@ -319,7 +322,7 @@ get_register()
 /*
  * Read a constant literal from the given token string.
  */
-static uint8_t
+static uint32_t
 get_const_from_token(char* arg)
 {
   if (*arg == '0') {
@@ -336,7 +339,7 @@ get_const_from_token(char* arg)
 /*
  * Read a constant literal from the input.
  */
-static uint8_t
+static uint32_t
 get_const()
 {
   char* arg = strtok(NULL, DELIM);
@@ -354,7 +357,7 @@ get_const()
  * If emit is true then missing labels will throw an exception; otherwise they
  * will be ignored
  */
-static uint8_t
+static uint32_t
 get_address(bool emit)
 {
   char* arg = strtok(NULL, DELIM);
@@ -415,11 +418,23 @@ translate_line(char* line, FILE* of, bool emit)
     op.reg     = get_register();
     op.args[0] = get_address(emit);
 
+  } else if (isop(tok, "RLD")) {
+    op.opcode  = OP_RLD;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+
   } else if (isop(tok, "STORE")) {
     op.opcode  = OP_STORE;
     op.nArgs   = 1;
     op.args[0] = get_address(emit);
     op.reg     = get_register();
+
+  } else if (isop(tok, "RSTORE")) {
+    op.opcode  = OP_RSTORE;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
 
   } else if (isop(tok, "MOV")) {
     op.opcode  = OP_MOV;
