@@ -48,7 +48,9 @@ typedef enum {
 
   OP_LD    = 0b00101000,
   OP_LDI   = 0b00111000,
+  OP_RLD   = 0b10111000,
   OP_STORE = 0b00101100,
+  OP_RSTORE= 0b10101100,
   OP_MOV   = 0b00111100,
 
   OP_ADD = 0b00000100,
@@ -363,11 +365,23 @@ translate_line(char* line, FILE* of, bool emit)
     op.reg     = get_register();
     op.args[0] = get_address(emit);
 
+  } else if (isop(tok, "RLD")) {
+    op.opcode  = OP_RLD;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
+
   } else if (isop(tok, "STORE")) {
     op.opcode  = OP_STORE;
     op.nArgs   = 1;
     op.args[0] = get_address(emit);
     op.reg     = get_register();
+
+  } else if (isop(tok, "RSTORE")) {
+    op.opcode  = OP_RSTORE;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_register();
 
   } else if (isop(tok, "MOV")) {
     op.opcode  = OP_MOV;
