@@ -6,12 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _MSC_VER 
-//not #if defined(_WIN32) || defined(_WIN64) because we have strncasecmp in mingw
-#define strncasecmp _strnicmp
-#define strcasecmp _stricmp
+#ifdef _MSC_VER
+  // not #if defined(_WIN32) || defined(_WIN64) because we have strncasecmp in mingw
+  #define strncasecmp _strnicmp
+  #define strcasecmp _stricmp
 #else
-#include <strings.h>
+  #include <strings.h>
 #endif
 
 // Specifies the default output file format
@@ -37,9 +37,9 @@
 
 
 typedef enum {
-  OP_WORD  = 0b00000000,
-  OP_HALT  = 0b00000000,
-  OP_NOP   = 0b00000001,
+  OP_WORD = 0b00000000,
+  OP_HALT = 0b00000000,
+  OP_NOP  = 0b00000001,
 
   OP_LD    = 0b00101000,
   OP_LDI   = 0b00111000,
@@ -48,32 +48,32 @@ typedef enum {
   OP_RSTORE= 0b10101100,
   OP_MOV   = 0b00111100,
 
-  OP_ADD   = 0b00000100,
-  OP_SUB   = 0b00001000,
-  OP_MUL   = 0b00001100,
-  OP_DIV   = 0b00010000,
+  OP_ADD = 0b00000100,
+  OP_SUB = 0b00001000,
+  OP_MUL = 0b00001100,
+  OP_DIV = 0b00010000,
 
-  OP_AND   = 0b00010100,
-  OP_OR    = 0b00011000,
-  OP_XOR   = 0b00011100,
-  OP_SHL   = 0b01101100,
-  OP_SHR   = 0b01110000,
+  OP_AND = 0b00010100,
+  OP_OR  = 0b00011000,
+  OP_XOR = 0b00011100,
+  OP_SHL = 0b01101100,
+  OP_SHR = 0b01110000,
 
-  OP_INC   = 0b00100000,
-  OP_DEC   = 0b00100100,
+  OP_INC = 0b00100000,
+  OP_DEC = 0b00100100,
 
-  OP_CALL  = 0b10000000,
-  OP_RET   = 0b10000001,
+  OP_CALL = 0b10000000,
+  OP_RET  = 0b10000001,
 
-  OP_PUSH  = 0b10000100,
-  OP_POP   = 0b10001000,
+  OP_PUSH = 0b10000100,
+  OP_POP  = 0b10001000,
 
-  OP_JUMP  = 0b00000011,
-  OP_JE    = 0b11000100,
-  OP_JNE   = 0b11001000,
-  OP_JG    = 0b11001100,
-  OP_JZ    = 0b11010000,
-  OP_JNZ   = 0b11100100,
+  OP_JUMP = 0b00000011,
+  OP_JE   = 0b11000100,
+  OP_JNE  = 0b11001000,
+  OP_JG   = 0b11001100,
+  OP_JZ   = 0b11010000,
+  OP_JNZ  = 0b11100100,
 } Opcode;
 
 typedef struct {
@@ -102,65 +102,13 @@ Label labels[1024];
 size_t nLabels = 0;
 
 // Current line number being read, for error reporting
-size_t iInputLine = 0;
+size_t iInputLine    = 0;
 // Current program counter location, for labels
-unsigned int curAddr    = 0;
+unsigned int curAddr = 0;
 
 // For left-justifying the output
 size_t longestLineLen = 0;
 
-
-// Thanks to Antti Haapala for cross-platform getline
-// https://stackoverflow.com/a/47229318/9945076
-#ifdef _MSC_VER
-size_t getline(char **lineptr, size_t *n, FILE *stream) {
-    size_t pos;
-    int c;
-
-    if (lineptr == NULL || stream == NULL || n == NULL) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    c = getc(stream);
-    if (c == EOF) {
-        return -1;
-    }
-
-    if (*lineptr == NULL) {
-        *lineptr = malloc(128);
-        if (*lineptr == NULL) {
-            return -1;
-        }
-        *n = 128;
-    }
-
-    pos = 0;
-    while(c != EOF) {
-        if (pos + 1 >= *n) {
-            size_t new_size = *n + (*n >> 2);
-            if (new_size < 128) {
-                new_size = 128;
-            }
-            char *new_ptr = realloc(*lineptr, new_size);
-            if (new_ptr == NULL) {
-                return -1;
-            }
-            *n = new_size;
-            *lineptr = new_ptr;
-        }
-
-        ((unsigned char *)(*lineptr))[pos ++] = c;
-        if (c == '\n') {
-            break;
-        }
-        c = getc(stream);
-    }
-
-    (*lineptr)[pos] = '\0';
-    return pos;
-}
-#endif
 
 
 static void
@@ -326,9 +274,9 @@ static uint32_t
 get_const_from_token(char* arg)
 {
   if (*arg == '0') {
-    if (*(arg + 1) == 'x' || *(arg+1) == 'X') {
+    if (*(arg + 1) == 'x' || *(arg + 1) == 'X') {
       return strtoul(arg, NULL, 16);
-    } else if (*(arg + 1) == 'b' || *(arg+1) == 'B') {
+    } else if (*(arg + 1) == 'b' || *(arg + 1) == 'B') {
       return strtoul(arg + 2, NULL, 2);
     }
   }
@@ -627,7 +575,6 @@ translate_line(char* line, FILE* of, bool emit)
 static void
 translate_file(FILE* inFile, FILE* outFile)
 {
-  char* line = (char*) malloc(LINE_MAX_LEN);
   size_t len = 0;
 
   // The first pass finds labels. The input is translated so that the PC can be
@@ -645,9 +592,9 @@ translate_file(FILE* inFile, FILE* outFile)
     else
       printf("\nInstructions\n\n");
 
-    size_t read;
-    do {
-      read = getline(&line, &len, inFile);
+    char buf[8192];
+    char* line;
+      while ((line = fgets(buf, sizeof(buf), inFile))) {
       ++iInputLine;
 
       strip_comments(line);
@@ -658,7 +605,7 @@ translate_file(FILE* inFile, FILE* outFile)
         continue;
 
       // Measure the longest line so we can left-justify and pad stdout
-      size_t cleanLen = strnlen(cleanLine, len);
+      size_t cleanLen = strlen(cleanLine);
       if (cleanLen > longestLineLen)
         longestLineLen = cleanLen;
 
@@ -666,7 +613,7 @@ translate_file(FILE* inFile, FILE* outFile)
         translate_line(cleanLine, outFile, (pass == 1));
         ++curAddr;
       }
-    } while (read != -1);
+    }
 
     if (errno) {
       printf(
@@ -676,8 +623,6 @@ translate_file(FILE* inFile, FILE* outFile)
       break;
     }
   }
-
-  free(line);
 }
 
 
@@ -735,11 +680,7 @@ main(int argc, char* argv[])
   translate_file(inFile, outFile);
 
   if (outputFormat == OF_MIF) {
-    fprintf(
-        outFile,
-        "  [%02x..%02x] : 00;\n",
-        curAddr,
-        MEMORY_DEPTH - 1);
+    fprintf(outFile, "  [%02x..%02x] : 00;\n", curAddr, MEMORY_DEPTH - 1);
     fprintf(outFile, "END;");
   }
 
