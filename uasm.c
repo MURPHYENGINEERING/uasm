@@ -20,8 +20,8 @@
 #define DEFAULT_OUTPUT_EXTENSION ".mif"
 // TODO: get these from command line arguments
 // and actually use them to format opcodes
-#define WORD_WIDTH 8
-#define MEMORY_DEPTH 256
+#define WORD_WIDTH 32
+#define MEMORY_DEPTH 1024
 
 // Maximum length of an input line
 #define LINE_MAX_LEN 1024
@@ -84,9 +84,9 @@ typedef struct {
   uint8_t reg; // Target register, or 0 if not specified.
                // The target register index becomes the low 2 bits of the opcode
   // Opcode arguments appear as data between instructions
-  int16_t args[N_ARGS_MAX];
+  uint32_t args[N_ARGS_MAX];
   size_t nArgs;
-  uint16_t mach; // Machine code translation
+  uint32_t mach; // Machine code translation
 } OP;
 
 
@@ -228,7 +228,7 @@ find_label(char* line, bool notify)
     labels[nLabels].addr = curAddr;
     if (notify)
       printf(
-          "  %-10s = %02x on line %lu\n",
+          "  %-10s = %08x on line %lu\n",
           labels[nLabels].name,
           curAddr,
           iInputLine);
@@ -267,7 +267,7 @@ get_register()
 /*
  * Read a constant literal from the given token string.
  */
-static uint8_t
+static uint32_t
 get_const_from_token(char* arg)
 {
   if (*arg == '0') {
@@ -284,7 +284,7 @@ get_const_from_token(char* arg)
 /*
  * Read a constant literal from the input.
  */
-static uint8_t
+static uint32_t
 get_const()
 {
   char* arg = strtok(NULL, DELIM);
@@ -511,13 +511,13 @@ translate_line(char* line, FILE* of, bool emit)
   if (emit) {
     switch (outputFormat) {
     case OF_LOADER:
-      fprintf(of, "%02x  %02x\n", curAddr, op.mach);
-      printf("%02x  %02x\n", curAddr, op.mach);
+      fprintf(of, "%08x  %08x\n", curAddr, op.mach);
+      printf("%08x  %08x\n", curAddr, op.mach);
       break;
 
     case OF_MIF:
-      fprintf(of, "  %02x : %02x;\n", curAddr, op.mach);
-      printf("%02x : %02x;\n", curAddr, op.mach);
+      fprintf(of, "  %08x : %08x;\n", curAddr, op.mach);
+      printf("%08x : %08x;\n", curAddr, op.mach);
       break;
     }
   }
@@ -527,23 +527,23 @@ translate_line(char* line, FILE* of, bool emit)
     if (emit) {
       switch (outputFormat) {
       case OF_LOADER:
-        fprintf(of, "%02x  %02x\n", curAddr, op.args[i]);
+        fprintf(of, "%08x  %08x\n", curAddr, op.args[i]);
         // Left-justify the output and pad with spaces
         snprintf(
             buf,
             sizeof(buf) - 1,
-            "  %%-%lus%%02x  %%02x\n",
+            "  %%-%lus%%08x  %%08x\n",
             longestLineLen + PADDING_SEP);
         printf(buf, "", curAddr, op.args[i]);
         break;
 
       case OF_MIF:
-        fprintf(of, "  %02x : %02x;\n", curAddr, op.args[i]);
+        fprintf(of, "  %08x : %08x;\n", curAddr, op.args[i]);
         // Left-justify the output and pad with spaces
         snprintf(
             buf,
             sizeof(buf) - 1,
-            "  %%-%lus%%02x : %%02x\n",
+            "  %%-%lus%%08x : %%08x\n",
             longestLineLen + PADDING_SEP);
         printf(buf, "", curAddr, op.args[i]);
         break;
@@ -665,7 +665,7 @@ main(int argc, char* argv[])
   translate_file(inFile, outFile);
 
   if (outputFormat == OF_MIF) {
-    fprintf(outFile, "  [%02x..%02x] : 00;\n", curAddr, MEMORY_DEPTH - 1);
+    fprintf(outFile, "  [%08x..%08x] : 00;\n", curAddr, MEMORY_DEPTH - 1);
     fprintf(outFile, "END;");
   }
 

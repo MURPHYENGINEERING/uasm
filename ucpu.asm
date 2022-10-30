@@ -1,2 +1,1 @@
-  ldi a 0xff
-  store 0xC0 a
+  ldi a 1000000
