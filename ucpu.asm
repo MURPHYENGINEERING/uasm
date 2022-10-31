@@ -5,9 +5,10 @@ main:
   halt
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Calling convention: string address is on the stack
 print_string:
-  ; Get the string address argument
+  ; Get the string address argument into A
   pop a
   ; Save the current cursor position so we can increment it by one character
   ld b cursor
@@ -22,9 +23,12 @@ print_string_loop:
   ldi c font_0  ; Point at the glyph in the font table
   add b c
 
+  push a        ; Save the current character index
   ; Print the font glyph
   push b
   call print_glyph
+
+  pop a         ; Restore the current character index
   
   ; Go to the next character
   inc a     
@@ -38,6 +42,7 @@ print_string_loop_end:
   ret ; print_string
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Calling convention: glyph address is on the stack
 print_glyph:
   ; Get the glyph address argument into A
@@ -58,6 +63,7 @@ print_glyph_loop:
   ret ; print_glyph
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ---- DATA ----
 cursor:
   word 0xc0   ; The cursor points into the framebuffer at the point where the
@@ -66,6 +72,8 @@ cursor:
 message:
   string HELLO WORLD
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ---- 8 bit Font ----
 
 ; ASCII 0 starts at 0x30, so to find the character in this table, just subtract
