@@ -10,7 +10,23 @@ print_string:
   ; Get the string address argument
   pop a
 print_string_loop:
-  jnz b print_string_loop
+  rld b a                     ; Retrieve the character from the string
+  jz b print_string_loop_end  ; escape at the null terminator
+
+  ; Decode the character into a font glyph
+  ldi c 0x30    ; Translate from ASCII to our table
+  sub b c
+  ldi c font_0  ; Point at the glyph in the font table
+  add b c
+
+  ; Print the character
+  push b
+  call print_char
+  
+  ; Go to the next character
+  inc a     
+  jmp b print_string_loop   
+print_string_loop_end:
   ret ; print_string
 
 
@@ -36,9 +52,10 @@ print_char_loop:
 
 ; ---- DATA ----
 cursor:
-  word 0x00       ; The cursor points at a word in memory where the next
-                  ; character will be written. I.e. when we write an 8x8 character,
-                  ; we need to advance the cursor by 64 bits
+  word 0  ; The cursor points at a word in memory where the next
+          ; character will be written. The character is multiple vertical lines,
+          ; though, so it won't be written contiguously; instead, each character
+          ; word will be written with a stride of SCREEN_WIDTH.
 
 message:
   string HELLO WORLD
