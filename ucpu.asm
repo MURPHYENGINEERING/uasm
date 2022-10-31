@@ -9,6 +9,9 @@ main:
 print_string:
   ; Get the string address argument
   pop a
+  ; Save the current cursor position so we can increment it by one character
+  ld b cursor
+  push b
 print_string_loop:
   rld b a                     ; Retrieve the character from the string
   jz b print_string_loop_end  ; escape at the null terminator
@@ -19,43 +22,46 @@ print_string_loop:
   ldi c font_0  ; Point at the glyph in the font table
   add b c
 
-  ; Print the character
+  ; Print the font glyph
   push b
-  call print_char
+  call print_glyph
   
   ; Go to the next character
   inc a     
-  jmp b print_string_loop   
+  jmp print_string_loop   
 print_string_loop_end:
+  ; Restore the old cursor position
+  pop b
+  ; Increment horizontally to the next character position
+  inc b
+  store cursor b
   ret ; print_string
 
 
-; Calling convention: character address is on the stack
-print_char:
-  ; Get the character address argument into A
+; Calling convention: glyph address is on the stack
+print_glyph:
+  ; Get the glyph address argument into A
   pop a
 
-  ldi c 7           ; A character font comprises 8 words
-print_char_loop:
-  rld b a           ; Load the data at memory location A into B
+  ldi c 7           ; A font glyph comprises 8 words (7..0)
+print_glyph_loop:
+  rld b a           ; Load the glyph data at memory location A into B
 
-  ; TODO: Copy character line from B into framebuffer
-  ; The character lines are arranged vertically on the screen, so we need to
-  ; write a line, then advance the cursor by one whole screen width
+  ; TODO: Copy glyph word from B into framebuffer
+  ; The glyph words are arranged vertically on the screen, so we need to
+  ; write a word, then advance the cursor by one whole screen width
 
-  inc a             ; Go to the next character word
+  inc a             ; Go to the next glyph word
   dec c             ; count down
-  jnz c print_char_loop
+  jnz c print_glyph_loop
 
-  ret ; print_char
+  ret ; print_glyph
 
 
 ; ---- DATA ----
 cursor:
-  word 0  ; The cursor points at a word in memory where the next
-          ; character will be written. The character is multiple vertical lines,
-          ; though, so it won't be written contiguously; instead, each character
-          ; word will be written with a stride of SCREEN_WIDTH.
+  word 0xc0   ; The cursor points into the framebuffer at the point where the
+              ; next font glyph will be written.
 
 message:
   string HELLO WORLD
