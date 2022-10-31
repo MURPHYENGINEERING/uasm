@@ -77,8 +77,7 @@ print_glyph_loop:
   ret ; print_glyph
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; ---- DATA ----
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; DATA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 cursor:
   word 0xc0   ; The cursor points into the framebuffer at the point where the
               ; next font glyph will be written.
@@ -87,8 +86,7 @@ message:
   string HELLO WORLD
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; ---- 8 bit Font ----
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 8 bit font ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; ASCII 0 starts at 0x30, so to find the character in this table, just subtract
 ; 0x30 from the ASCII value and add the result to font_0
