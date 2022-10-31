@@ -21,6 +21,7 @@ print_string_loop:
   add b c
 
   push a        ; Save the current character index
+
   ; Print the font glyph
   push b
   call print_glyph
