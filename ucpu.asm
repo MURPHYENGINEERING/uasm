@@ -10,9 +10,6 @@ main:
 print_string:
   ; Get the string address argument into A
   pop a
-  ; Save the current cursor position so we can increment it by one character
-  ld b cursor
-  push b
 print_string_loop:
   rld b a                     ; Retrieve the character from the string
   jz b print_string_loop_end  ; escape at the null terminator
@@ -34,11 +31,6 @@ print_string_loop:
   inc a     
   jmp print_string_loop   
 print_string_loop_end:
-  ; Restore the old cursor position
-  pop b
-  ; Increment horizontally to the next character position
-  inc b
-  store cursor b
   ret ; print_string
 
 
@@ -48,17 +40,38 @@ print_glyph:
   ; Get the glyph address argument into A
   pop a
 
+  ; Save the current cursor position so we can increment it by one character
+  ld b cursor
+  push b
+
   ldi c 7           ; A font glyph comprises 8 words (7..0)
 print_glyph_loop:
   rld b a           ; Load the glyph data at memory location A into B
 
-  ; TODO: Copy glyph word from B into framebuffer
-  ; The glyph words are arranged vertically on the screen, so we need to
-  ; write a word, then advance the cursor by one whole screen width
+  ; Save the word count
+  push c
+
+  ; Copy the glyph word to the framebuffer
+  ld c cursor
+  rstore c b
+
+  ; Advance the cursor by one line
+  ldi d 640
+  add c d
+  store cursor c
+
+  ; Restore the word count
+  pop c
 
   inc a             ; Go to the next glyph word
-  dec c             ; count down
+  dec c             ; count down glyph words remaining
   jnz c print_glyph_loop
+
+  ; Restore the old cursor position
+  pop d
+  ; Increment horizontally to the next character position
+  inc d
+  store cursor d
 
   ret ; print_glyph
 
