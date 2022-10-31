@@ -2,9 +2,14 @@
 
   ldi c 7
 char_loop:
-  rld b a           ; Load the nth character line 
+  rld b a           ; Load the ath character line 
+  ; Copy character line into framebuffer
+  inc a             ; Go to the next character line
   dec c             ; count down
   jnz c char_loop
+
+message:
+  string HELLO WORLD
 
 font_0:
   word 0b01111100

@@ -30,7 +30,9 @@
 // Number of spaces separating the input and output when printed to stdout
 #define PADDING_SEP 4
 // Maximum number of arguments that any opcode can have
-#define N_ARGS_MAX 8
+// Also the maximum length of string data, because characters are encoded as 
+// opcode arguments.
+#define N_ARGS_MAX 1024
 
 // Separates tokens in the input
 #define DELIM " \t"
@@ -327,6 +329,20 @@ get_address(bool emit)
 }
 
 
+static void
+get_string(char* line, uint32_t* args, size_t* nArgs)
+{
+  char* tok;
+  while ((tok = strtok(NULL, "\n"))) {
+    char* c = tok;
+    while (*c != '\0') {
+      args[(*nArgs)++] = *(c++);
+    }
+  }
+  args[(*nArgs)++] = 0;
+}
+
+
 /*
  * Translate the given line of input to machine code and optionally emit the
  * result into the given output file, as well as to standard output.
@@ -353,7 +369,17 @@ translate_line(char* line, FILE* of, bool emit)
   OP op;
   memset(&op, 0, sizeof(OP));
 
-  if (isop(tok, "LDI")) {
+  if (isop(tok, "STRING")) {
+    // A string is just an array of words
+    op.opcode = OP_WORD;
+    get_string(line, op.args, &op.nArgs);
+
+  } else if (isop(tok, "WORD")) {
+    op.opcode  = OP_WORD;
+    op.nArgs   = 1;
+    op.args[0] = get_const();
+
+  } else if (isop(tok, "LDI")) {
     op.opcode  = OP_LDI;
     op.nArgs   = 1;
     op.reg     = get_register();
@@ -511,35 +537,26 @@ translate_line(char* line, FILE* of, bool emit)
   } else if (isop(tok, "HALT")) {
     op.opcode = OP_HALT;
 
-  } else if (isop(tok, "WORD")) {
-    op.opcode  = OP_WORD;
-    // This is not a proper argument; instead, we'll emit this arg in place of
-    // an opcode; hence nArgs = 0
-    op.args[0] = get_const();
-
   } else if (emit) {
     snprintf(buf, sizeof(buf) - 1, "opcode ('%s' is not valid)", tok);
     expected(buf);
   }
 
-  if (op.opcode == OP_WORD) {
-    op.mach = op.args[0];
-  } else {
+  // Emit the opcode if it's not data
+  if (op.opcode != OP_WORD) {
     // The machine code of an opcode has the target register in the low two bits.
     op.mach = op.opcode + op.reg;
-  }
 
-  if (emit) {
-    switch (outputFormat) {
-    case OF_LOADER:
-      fprintf(of, "%08x  %08x\n", curAddr, op.mach);
-      printf("%08x  %08x\n", curAddr, op.mach);
-      break;
-
-    case OF_MIF:
-      fprintf(of, "  %08x : %08x;\n", curAddr, op.mach);
-      printf("%08x : %08x;\n", curAddr, op.mach);
-      break;
+    if (emit) {
+      switch (outputFormat) {
+      case OF_LOADER:
+        fprintf(of, "%08x  %08x\n", curAddr, op.mach);
+        break;
+      case OF_MIF:
+        fprintf(of, "  %08x : %08x;\n", curAddr, op.mach);
+        break;
+      }
+        printf("%08x  %08x\n", curAddr, op.mach);
     }
   }
 
@@ -547,8 +564,10 @@ translate_line(char* line, FILE* of, bool emit)
     ++curAddr;
     if (emit) {
       switch (outputFormat) {
-      case OF_LOADER:
-        fprintf(of, "%08x  %08x\n", curAddr, op.args[i]);
+      case OF_LOADER: fprintf(of, "%08x  %08x\n", curAddr, op.args[i]); break;
+      case OF_MIF: fprintf(of, "  %08x : %08x;\n", curAddr, op.args[i]); break;
+      }
+      if (op.opcode != OP_WORD || i > 0) {
         // Left-justify the output and pad with spaces
         snprintf(
             buf,
@@ -556,18 +575,8 @@ translate_line(char* line, FILE* of, bool emit)
             "  %%-%lus%%08x  %%08x\n",
             longestLineLen + PADDING_SEP);
         printf(buf, "", curAddr, op.args[i]);
-        break;
-
-      case OF_MIF:
-        fprintf(of, "  %08x : %08x;\n", curAddr, op.args[i]);
-        // Left-justify the output and pad with spaces
-        snprintf(
-            buf,
-            sizeof(buf) - 1,
-            "  %%-%lus%%08x : %%08x\n",
-            longestLineLen + PADDING_SEP);
-        printf(buf, "", curAddr, op.args[i]);
-        break;
+      } else {
+        printf("%08x  %08x\n", curAddr, op.args[i]);
       }
     }
   }
