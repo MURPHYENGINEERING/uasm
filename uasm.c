@@ -46,12 +46,12 @@ typedef enum {
   OP_HALT = 0b00000000,
   OP_NOP  = 0b00000001,
 
-  OP_LD    = 0b00101000,
-  OP_LDI   = 0b00111000,
-  OP_RLD   = 0b10111000,
-  OP_STORE = 0b00101100,
-  OP_RSTORE= 0b10101100,
-  OP_MOV   = 0b00111100,
+  OP_LD     = 0b00101000,
+  OP_LDI    = 0b00111000,
+  OP_RLD    = 0b10111000,
+  OP_STORE  = 0b00101100,
+  OP_RSTORE = 0b10101100,
+  OP_MOV    = 0b00111100,
 
   OP_ADD = 0b00000100,
   OP_SUB = 0b00001000,
@@ -357,7 +357,7 @@ translate_line(char* line, FILE* of, bool emit)
     op.opcode  = OP_LDI;
     op.nArgs   = 1;
     op.reg     = get_register();
-    op.args[0] = get_const();
+    op.args[0] = get_address(emit);
 
   } else if (isop(tok, "LD")) {
     op.opcode  = OP_LD;
@@ -512,15 +512,22 @@ translate_line(char* line, FILE* of, bool emit)
     op.opcode = OP_HALT;
 
   } else if (isop(tok, "WORD")) {
-    op.opcode = OP_WORD;
+    op.opcode  = OP_WORD;
+    // This is not a proper argument; instead, we'll emit this arg in place of
+    // an opcode; hence nArgs = 0
+    op.args[0] = get_const();
 
   } else if (emit) {
     snprintf(buf, sizeof(buf) - 1, "opcode ('%s' is not valid)", tok);
     expected(buf);
   }
 
-  // The machine code of an opcode has the target register in the low two bits.
-  op.mach = op.opcode + op.reg;
+  if (op.opcode == OP_WORD) {
+    op.mach = op.args[0];
+  } else {
+    // The machine code of an opcode has the target register in the low two bits.
+    op.mach = op.opcode + op.reg;
+  }
 
   if (emit) {
     switch (outputFormat) {
@@ -593,7 +600,7 @@ translate_file(FILE* inFile, FILE* outFile)
 
     char buf[8192];
     char* line;
-      while ((line = fgets(buf, sizeof(buf), inFile))) {
+    while ((line = fgets(buf, sizeof(buf), inFile))) {
       ++iInputLine;
 
       strip_comments(line);
