@@ -1,1 +1,437 @@
-  ldi a 1000000
+  ldi a font_A
+
+  ldi c 7
+char_loop:
+  rld b a           ; Load the nth character line 
+  dec c             ; count down
+  jnz c char_loop
+
+font_0:
+  word 0b01111100
+  word 0b11001110
+  word 0b11011110
+  word 0b11110110
+  word 0b11100110
+  word 0b11000110
+  word 0b01111100
+  word 0b00000000
+
+font_1:
+  word 0b00011000
+  word 0b00111000
+  word 0b00011000
+  word 0b00011000
+  word 0b00011000
+  word 0b00011000
+  word 0b01111110
+  word 0b00000000
+
+font_2:
+  word 0b01111100
+  word 0b11000110
+  word 0b00000110
+  word 0b01111100
+  word 0b11000000
+  word 0b11000000
+  word 0b11111110
+  word 0b00000000
+
+font_3:
+  word 0b11111100
+  word 0b00000110
+  word 0b00000110
+  word 0b00111100
+  word 0b00000110
+  word 0b00000110
+  word 0b11111100
+  word 0b00000000
+
+font_4:
+  word 0b00001100
+  word 0b11001100
+  word 0b11001100
+  word 0b11001100
+  word 0b11111110
+  word 0b00001100
+  word 0b00001100
+  word 0b00000000
+
+font_5:
+  word 0b11111110
+  word 0b11000000
+  word 0b11111100
+  word 0b00000110
+  word 0b00000110
+  word 0b11000110
+  word 0b01111100
+  word 0b00000000
+
+font_6:
+  word 0b01111100
+  word 0b11000000
+  word 0b11000000
+  word 0b11111100
+  word 0b11000110
+  word 0b11000110
+  word 0b01111100
+  word 0b00000000
+
+font_7:
+  word 0b11111110
+  word 0b00000110
+  word 0b00000110
+  word 0b00001100
+  word 0b00011000
+  word 0b00110000
+  word 0b00110000
+  word 0b00000000
+
+font_8:
+  word 0b01111100
+  word 0b11000110
+  word 0b11000110
+  word 0b01111100
+  word 0b11000110
+  word 0b11000110
+  word 0b01111100
+  word 0b00000000
+
+font_9:
+  word 0b01111100
+  word 0b11000110
+  word 0b11000110
+  word 0b01111110
+  word 0b00000110
+  word 0b00000110
+  word 0b01111100
+  word 0b00000000
+
+font_::
+  word 0b00000000
+  word 0b00011000
+  word 0b00011000
+  word 0b00000000
+  word 0b00000000
+  word 0b00011000
+  word 0b00011000
+  word 0b00000000
+
+font_;:
+  word 0b00000000
+  word 0b00011000
+  word 0b00011000
+  word 0b00000000
+  word 0b00000000
+  word 0b00011000
+  word 0b00011000
+  word 0b00110000
+
+font_<:
+  word 0b00001100
+  word 0b00011000
+  word 0b00110000
+  word 0b01100000
+  word 0b00110000
+  word 0b00011000
+  word 0b00001100
+  word 0b00000000
+
+font_=:
+  word 0b00000000
+  word 0b00000000
+  word 0b01111110
+  word 0b00000000
+  word 0b01111110
+  word 0b00000000
+  word 0b00000000
+  word 0b00000000
+
+font_>:
+  word 0b00110000
+  word 0b00011000
+  word 0b00001100
+  word 0b00000110
+  word 0b00001100
+  word 0b00011000
+  word 0b00110000
+  word 0b00000000
+
+font_?:
+  word 0b00111100
+  word 0b01100110
+  word 0b00001100
+  word 0b00011000
+  word 0b00011000
+  word 0b00000000
+  word 0b00011000
+  word 0b00000000
+
+font_@:
+  word 0b01111100
+  word 0b11000110
+  word 0b11011110
+  word 0b11011110
+  word 0b11011110
+  word 0b11000000
+  word 0b01111110
+  word 0b00000000
+
+font_A:
+  word 0b00111000
+  word 0b01101100
+  word 0b11000110
+  word 0b11000110
+  word 0b11111110
+  word 0b11000110
+  word 0b11000110
+  word 0b00000000
+
+font_B:
+  word 0b11111100
+  word 0b11000110
+  word 0b11000110
+  word 0b11111100
+  word 0b11000110
+  word 0b11000110
+  word 0b11111100
+  word 0b00000000
+
+font_C:
+  word 0b01111100
+  word 0b11000110
+  word 0b11000000
+  word 0b11000000
+  word 0b11000000
+  word 0b11000110
+  word 0b01111100
+  word 0b00000000
+
+font_D:
+  word 0b11111000
+  word 0b11001100
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b11001100
+  word 0b11111000
+  word 0b00000000
+
+font_E:
+  word 0b11111110
+  word 0b11000000
+  word 0b11000000
+  word 0b11111000
+  word 0b11000000
+  word 0b11000000
+  word 0b11111110
+  word 0b00000000
+
+font_F:
+  word 0b11111110
+  word 0b11000000
+  word 0b11000000
+  word 0b11111000
+  word 0b11000000
+  word 0b11000000
+  word 0b11000000
+  word 0b00000000
+
+font_G:
+  word 0b01111100
+  word 0b11000110
+  word 0b11000000
+  word 0b11000000
+  word 0b11001110
+  word 0b11000110
+  word 0b01111100
+  word 0b00000000
+
+font_H:
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b11111110
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b00000000
+
+font_I:
+  word 0b01111110
+  word 0b00011000
+  word 0b00011000
+  word 0b00011000
+  word 0b00011000
+  word 0b00011000
+  word 0b01111110
+  word 0b00000000
+
+font_J:
+  word 0b00000110
+  word 0b00000110
+  word 0b00000110
+  word 0b00000110
+  word 0b00000110
+  word 0b11000110
+  word 0b01111100
+  word 0b00000000
+
+font_K:
+  word 0b11000110
+  word 0b11001100
+  word 0b11011000
+  word 0b11110000
+  word 0b11011000
+  word 0b11001100
+  word 0b11000110
+  word 0b00000000
+
+font_L:
+  word 0b11000000
+  word 0b11000000
+  word 0b11000000
+  word 0b11000000
+  word 0b11000000
+  word 0b11000000
+  word 0b11111110
+  word 0b00000000
+
+font_M:
+  word 0b11000110
+  word 0b11101110
+  word 0b11111110
+  word 0b11111110
+  word 0b11010110
+  word 0b11000110
+  word 0b11000110
+  word 0b00000000
+
+font_N:
+  word 0b11000110
+  word 0b11100110
+  word 0b11110110
+  word 0b11011110
+  word 0b11001110
+  word 0b11000110
+  word 0b11000110
+  word 0b00000000
+
+font_O:
+  word 0b01111100
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b01111100
+  word 0b00000000
+
+font_P:
+  word 0b11111100
+  word 0b11000110
+  word 0b11000110
+  word 0b11111100
+  word 0b11000000
+  word 0b11000000
+  word 0b11000000
+  word 0b00000000
+
+font_Q:
+  word 0b01111100
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b11010110
+  word 0b11011110
+  word 0b01111100
+  word 0b00000110
+
+font_R:
+  word 0b11111100
+  word 0b11000110
+  word 0b11000110
+  word 0b11111100
+  word 0b11011000
+  word 0b11001100
+  word 0b11000110
+  word 0b00000000
+
+font_S:
+  word 0b01111100
+  word 0b11000110
+  word 0b11000000
+  word 0b01111100
+  word 0b00000110
+  word 0b11000110
+  word 0b01111100
+  word 0b00000000
+
+font_T:
+  word 0b11111111
+  word 0b00011000
+  word 0b00011000
+  word 0b00011000
+  word 0b00011000
+  word 0b00011000
+  word 0b00011000
+  word 0b00000000
+
+font_U:
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b11111110
+  word 0b00000000
+
+font_V:
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b01111100
+  word 0b00111000
+  word 0b00000000
+
+font_W:
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b11010110
+  word 0b11111110
+  word 0b01101100
+  word 0b00000000
+
+font_X:
+  word 0b11000110
+  word 0b11000110
+  word 0b01101100
+  word 0b00111000
+  word 0b01101100
+  word 0b11000110
+  word 0b11000110
+  word 0b00000000
+
+font_Y:
+  word 0b11000110
+  word 0b11000110
+  word 0b11000110
+  word 0b01111100
+  word 0b00011000
+  word 0b00110000
+  word 0b11100000
+  word 0b00000000
+
+font_Z:
+  word 0b11111110
+  word 0b00000110
+  word 0b00001100
+  word 0b00011000
+  word 0b00110000
+  word 0b01100000
+  word 0b11111110
+  word 0b00000000
