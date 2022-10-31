@@ -55,7 +55,7 @@ print_glyph_loop:
   ld c cursor
   rstore c b
 
-  ; Advance the cursor by one line
+  ; Advance the cursor to the next line
   ldi d 640
   add c d
   store cursor c
