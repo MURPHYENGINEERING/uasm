@@ -106,7 +106,7 @@ font_9:
   word 0b01111100
   word 0b00000000
 
-font_::
+font_colon:
   word 0b00000000
   word 0b00011000
   word 0b00011000
@@ -116,7 +116,7 @@ font_::
   word 0b00011000
   word 0b00000000
 
-font_;:
+font_semicolon:
   word 0b00000000
   word 0b00011000
   word 0b00011000
