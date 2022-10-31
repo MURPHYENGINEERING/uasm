@@ -30,7 +30,7 @@
 // Number of spaces separating the input and output when printed to stdout
 #define PADDING_SEP 4
 // Maximum number of arguments that any opcode can have
-// Also the maximum length of string data, because characters are encoded as 
+// Also the maximum length of string data, because characters are encoded as
 // opcode arguments.
 #define N_ARGS_MAX 1024
 
@@ -44,7 +44,7 @@ typedef struct {
 } Label;
 
 typedef enum {
-  OP_WORD = 0b00000000,
+  OP_WORD = 0b11111111,
   OP_HALT = 0b00000000,
   OP_NOP  = 0b00000001,
 
@@ -549,14 +549,10 @@ translate_line(char* line, FILE* of, bool emit)
 
     if (emit) {
       switch (outputFormat) {
-      case OF_LOADER:
-        fprintf(of, "%08x  %08x\n", curAddr, op.mach);
-        break;
-      case OF_MIF:
-        fprintf(of, "  %08x : %08x;\n", curAddr, op.mach);
-        break;
+      case OF_LOADER: fprintf(of, "%08x  %08x\n", curAddr, op.mach); break;
+      case OF_MIF: fprintf(of, "  %08x : %08x;\n", curAddr, op.mach); break;
       }
-        printf("%08x  %08x\n", curAddr, op.mach);
+      printf("%08x  %08x\n", curAddr, op.mach);
     }
   }
 

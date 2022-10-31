@@ -1,16 +1,52 @@
-  ldi a font_A
+main:
+  ldi a message
+  push a
+  call print_string
+  halt
 
-  ldi c 7
-char_loop:
-  rld b a           ; Load the ath character line 
-  ; Copy character line into framebuffer
-  inc a             ; Go to the next character line
+
+; Calling convention: string address is on the stack
+print_string:
+  ; Get the string address argument
+  pop a
+print_string_loop:
+  jnz b print_string_loop
+  ret ; print_string
+
+
+; Calling convention: character address is on the stack
+print_char:
+  ; Get the character address argument into A
+  pop a
+
+  ldi c 7           ; A character font comprises 8 words
+print_char_loop:
+  rld b a           ; Load the data at memory location A into B
+
+  ; TODO: Copy character line from B into framebuffer
+  ; The character lines are arranged vertically on the screen, so we need to
+  ; write a line, then advance the cursor by one whole screen width
+
+  inc a             ; Go to the next character word
   dec c             ; count down
-  jnz c char_loop
+  jnz c print_char_loop
+
+  ret ; print_char
+
+
+; ---- DATA ----
+cursor:
+  word 0x00       ; The cursor points at a word in memory where the next
+                  ; character will be written. I.e. when we write an 8x8 character,
+                  ; we need to advance the cursor by 64 bits
 
 message:
   string HELLO WORLD
 
+; ---- 8 bit Font ----
+
+; ASCII 0 starts at 0x30, so to find the character in this table, just subtract
+; 0x30 from the ASCII value and add the result to font_0
 font_0:
   word 0b01111100
   word 0b11001110
