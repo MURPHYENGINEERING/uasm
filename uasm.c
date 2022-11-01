@@ -21,7 +21,7 @@
 // TODO: get these from command line arguments
 // and actually use them to format opcodes
 #define WORD_WIDTH 32
-#define MEMORY_DEPTH 32768
+#define MEMORY_DEPTH 4096
 
 // Maximum length of an input line
 #define LINE_MAX_LEN 1024
