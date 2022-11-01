@@ -21,7 +21,7 @@
 // TODO: get these from command line arguments
 // and actually use them to format opcodes
 #define WORD_WIDTH 32
-#define MEMORY_DEPTH 1024
+#define DEFAULT_MEMORY_DEPTH 1024
 
 // Maximum length of an input line
 #define LINE_MAX_LEN 1024
@@ -665,12 +665,18 @@ main(int argc, char* argv[])
     return 1;
   }
 
+  unsigned int memoryDepth = DEFAULT_MEMORY_DEPTH;
+  if (argc > 3) {
+    memoryDepth = atoi(argv[3]);
+  }
+
   printf("uASM - by Matt Murphy, for EEE 333 wth Seth Abraham\n");
   printf("  Input file:\t\t%s\n  Output file:\t\t%s\n", inFilename, outFilename);
   printf(
       "  Output Format:\t%s\n",
       (outputFormat == OF_LOADER) ? "loader.dat"
                                   : "Intel Memory Initialization File");
+  printf("  Memory Depth:\t\t%d\n", memoryDepth);
 
   FILE* inFile = fopen(inFilename, "r");
   if (!inFile) {
@@ -686,12 +692,12 @@ main(int argc, char* argv[])
   }
 
   if (outputFormat == OF_MIF)
-    emit_mif_header(outFile, WORD_WIDTH, MEMORY_DEPTH);
+    emit_mif_header(outFile, WORD_WIDTH, memoryDepth);
 
   translate_file(inFile, outFile);
 
   if (outputFormat == OF_MIF) {
-    fprintf(outFile, "  [%08x..%08x] : 00;\n", curAddr, MEMORY_DEPTH - 1);
+    fprintf(outFile, "  [%08x..%08x] : 00;\n", curAddr, memoryDepth - 1);
     fprintf(outFile, "END;");
   }
 
