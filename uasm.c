@@ -40,7 +40,7 @@
 // Named jump addresses or variables
 typedef struct {
   char name[LABEL_MAX_LEN];
-  uint8_t addr;
+  uint32_t addr;
 } Label;
 
 typedef enum {
@@ -306,7 +306,7 @@ get_const()
  * If emit is true then missing labels will throw an exception; otherwise they
  * will be ignored
  */
-static uint8_t
+static uint32_t
 get_address(bool emit)
 {
   char* arg = strtok(NULL, DELIM);
