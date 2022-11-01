@@ -21,7 +21,7 @@
 // TODO: get these from command line arguments
 // and actually use them to format opcodes
 #define WORD_WIDTH 32
-#define MEMORY_DEPTH 1024
+#define MEMORY_DEPTH 32768
 
 // Maximum length of an input line
 #define LINE_MAX_LEN 1024
@@ -542,8 +542,12 @@ translate_line(char* line, FILE* of, bool emit)
     expected(buf);
   }
 
-  // Emit the opcode if it's not data
-  if (op.opcode != OP_WORD) {
+  if (op.opcode == OP_WORD) {
+    // Unconsume the address reserved for the opcode, because there isn't one
+    --curAddr;
+  } else {
+    // Emit the opcode if it's not data
+
     // The machine code of an opcode has the target register in the low two bits.
     op.mach = op.opcode + op.reg;
 
