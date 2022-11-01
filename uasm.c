@@ -40,7 +40,7 @@
 // Named jump addresses or variables
 typedef struct {
   char name[LABEL_MAX_LEN];
-  uint8_t addr;
+  uint32_t addr;
 } Label;
 
 typedef enum {
@@ -306,7 +306,7 @@ get_const()
  * If emit is true then missing labels will throw an exception; otherwise they
  * will be ignored
  */
-static uint8_t
+static uint32_t
 get_address(bool emit)
 {
   char* arg = strtok(NULL, DELIM);
@@ -542,8 +542,12 @@ translate_line(char* line, FILE* of, bool emit)
     expected(buf);
   }
 
-  // Emit the opcode if it's not data
-  if (op.opcode != OP_WORD) {
+  if (op.opcode == OP_WORD) {
+    // Unconsume the address reserved for the opcode, because there isn't one
+    --curAddr;
+  } else {
+    // Emit the opcode if it's not data
+
     // The machine code of an opcode has the target register in the low two bits.
     op.mach = op.opcode + op.reg;
 
