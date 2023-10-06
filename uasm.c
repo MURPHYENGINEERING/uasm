@@ -17,7 +17,7 @@
 // Specifies the default output file format
 // .dat : loader.dat format
 // .mif : Memory Initialization File format
-#define DEFAULT_OUTPUT_EXTENSION ".mif"
+#define DEFAULT_OUTPUT_EXTENSION ".dat"
 // TODO: get these from command line arguments
 // and actually use them to format opcodes
 #define WORD_WIDTH 32
@@ -48,14 +48,19 @@ typedef enum {
   OP_HALT = 0b00000000,
   OP_NOP  = 0b00000001,
 
+  OP_SETPG   = 0b00000100,
+  OP_LOADBPR = 0b00000010,
+
   OP_LD     = 0b00101000,
   OP_LDI    = 0b00111000,
   OP_RLD    = 0b10111000,
   OP_STORE  = 0b00101100,
   OP_RSTORE = 0b10101100,
-  OP_MOV    = 0b00111100,
+  OP_MOV    = 0b00010000,
 
-  OP_ADD = 0b00000100,
+  OP_ADD = 0b00100100,
+  OP_ADDI= 0b00110100,
+
   OP_SUB = 0b00001000,
   OP_MUL = 0b00001100,
   OP_DIV = 0b00010000,
@@ -94,7 +99,7 @@ typedef struct {
 } OP;
 
 
-typedef enum { OF_LOADER, OF_MIF } OutputFormat;
+typedef enum { OF_LOADER, OF_MIF, OF_ROM } OutputFormat;
 OutputFormat outputFormat;
 
 
@@ -379,6 +384,15 @@ translate_line(char* line, FILE* of, bool emit)
     op.nArgs   = 1;
     op.args[0] = get_const();
 
+  } else if (isop(tok, "setpg")) {
+    op.opcode = OP_SETPG;
+    op.reg    = get_const();
+
+  } else if (isop(tok, "loadbpr")) {
+    op.opcode = OP_LOADBPR;
+    op.nArgs  = 1;
+    op.args[0] = get_address(emit);
+
   } else if (isop(tok, "LDI")) {
     op.opcode  = OP_LDI;
     op.nArgs   = 1;
@@ -411,7 +425,7 @@ translate_line(char* line, FILE* of, bool emit)
 
   } else if (isop(tok, "MOV")) {
     op.opcode  = OP_MOV;
-    op.nArgs   = 1;
+    op.nArgs   = 0;
     op.reg     = get_register();
     op.args[0] = get_register();
 
@@ -427,7 +441,13 @@ translate_line(char* line, FILE* of, bool emit)
     op.opcode  = OP_ADD;
     op.nArgs   = 1;
     op.reg     = get_register();
-    op.args[0] = get_register();
+    op.args[0] = get_address(emit);
+
+  } else if (isop(tok, "ADDI")) {
+    op.opcode  = OP_ADDI;
+    op.nArgs   = 1;
+    op.reg     = get_register();
+    op.args[0] = get_const();
 
   } else if (isop(tok, "SUB")) {
     op.opcode  = OP_SUB;
@@ -555,6 +575,7 @@ translate_line(char* line, FILE* of, bool emit)
       switch (outputFormat) {
       case OF_LOADER: fprintf(of, "%08x  %08x\n", curAddr, op.mach); break;
       case OF_MIF: fprintf(of, "  %08x : %08x;\n", curAddr, op.mach); break;
+      case OF_ROM: fwrite(&op.mach, 4, 1, of); break;
       }
       printf("%08x  %08x\n", curAddr, op.mach);
     }
@@ -566,6 +587,7 @@ translate_line(char* line, FILE* of, bool emit)
       switch (outputFormat) {
       case OF_LOADER: fprintf(of, "%08x  %08x\n", curAddr, op.args[i]); break;
       case OF_MIF: fprintf(of, "  %08x : %08x;\n", curAddr, op.args[i]); break;
+      case OF_ROM: fwrite(&op.args[i], 4, 1, of); break;
       }
       if (op.opcode != OP_WORD || i > 0) {
         // Left-justify the output and pad with spaces
@@ -664,8 +686,10 @@ main(int argc, char* argv[])
     outputFormat = OF_LOADER;
   } else if (strcasecmp(ext, "mif") == 0) {
     outputFormat = OF_MIF;
+  } else if (strcasecmp(ext, "rom") == 0) {
+    outputFormat = OF_ROM;
   } else {
-    printf("\n! Output file should have .dat or .mif extension.\n");
+    printf("\n! Output file should have .dat or .mif .rom extension.\n");
     return 1;
   }
 
@@ -679,7 +703,9 @@ main(int argc, char* argv[])
   printf(
       "  Output Format:\t%s\n",
       (outputFormat == OF_LOADER) ? "loader.dat"
-                                  : "Intel Memory Initialization File");
+                                  : (outputFormat == OF_MIF) 
+                                  ? "Intel Memory Initialization File" 
+                                  : "Program ROM");
   printf("  Memory Depth:\t\t%d\n", memoryDepth);
 
   FILE* inFile = fopen(inFilename, "r");
